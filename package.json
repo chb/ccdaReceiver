@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "bson": "*",
+    "fleck": "*",
+    "hashish": "*",
     "connect-powered-by": "0.1.x",
     "async": "*",
     "express": "*",

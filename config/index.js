@@ -55,6 +55,7 @@ function launch() {
 
   require('./initializers/passport');
   require('./initializers/oauth2');
+  require('./initializers/oauth2-dyn-reg');
   require('./initializers/routes');
   
   app.listen(config.port);
