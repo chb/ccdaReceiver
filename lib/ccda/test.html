@@ -1,0 +1,18 @@
+<html>
+  <script 
+    src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js">
+  </script>
+  <script src="req.js"></script>
+
+  <script>
+    $.get("example.xml").then(function(doc){
+
+      console.log("ajax got", doc);
+      ccda.import("1", doc, function(err, result){
+        console.log("Zam got", err, result); 
+        window.result = result;
+      });
+    });
+
+  </script>
+</html>
