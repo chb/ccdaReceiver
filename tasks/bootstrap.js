@@ -2,39 +2,29 @@ var fs = require("fs");
 var config = require('../config');
 var db = require('../lib/db');
 var model = require('../lib/model');
+var argv = require("optimist").argv;
+var path = require("path");
+var util = require("util");
 
-var loadUser = loadModel(model.User);
+var drop = require("./drop");
+drop();
 
-model.App.collection.drop();
-var applist = ["bp-centiles", "cardiac-risk", "twinlist"];
-applist.forEach(loadApp);
+var add_user = require("./add_user");
+add_user({
+  "_id": "admin", 
+  "roles": [
+    "admin", 
+    "provider", 
+    "patient"
+  ]
+});
 
-model.User.collection.drop();
-var userlist =  [];
-
-userlist.push({_id: "jmandel@gmail.com", roles: ["admin", "provider"]});
-userlist.push({_id: "patient@dilute.net", roles: ["patient"], authorizedForPatients: ["1557780", "1137192"]});
-
-userlist.forEach(loadUser);
-
-model.Token.collection.drop();
-model.Authorization.collection.drop();
-
-function loadApp(a){
-  var manifest = fs.readFileSync( __dirname + "/../smart-apps/public/" + a + "/smart_manifest.json");
-  manifest = manifest.toString().replace(/{{app-root}}/g, config.appServer)
-  console.log(manifest);
-  var app = new model.App(JSON.parse(manifest));
-  app.save();
-};
-
-function loadModel(m){
-  return function(v) {
-    console.log(v);
-    var n = new m(v);
-    n.save();
-  };
-};
+var add_app = require("./add_app");
+add_app([
+  __dirname + "/../smart-apps/public/bp-centiles/smart_manifest.json",
+  __dirname + "/../smart-apps/public/cardiac-risk/smart_manifest.json",
+  __dirname + "/../smart-apps/public/twinlist/smart_manifest.json"
+]);
 
 config.dbstate.on("ready", function(){
   db.shutdown();
