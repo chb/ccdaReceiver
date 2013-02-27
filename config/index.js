@@ -32,14 +32,29 @@ function launch() {
     next();
   });
 
+
   app.use (function(req, res, next) {
-    req.rawBody = '';
+    var data = ""
     req.setEncoding('utf8');
-    req.on('data', function(chunk) { req.rawBody += chunk });
+    req.on('data', function(chunk) { data += chunk });
+    req.on('end', function() {
+        req.rawBody = data;
+    });
     next();
   });
 
   app.use(express.bodyParser());
+
+  app.use (function(req, res, next) {
+    if (req.rawBody !== undefined) {
+         return next();
+    }
+    req.on('end', function(){
+        next();
+    });
+  });
+
+  
 
   app.use(function(req, res, next){
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
