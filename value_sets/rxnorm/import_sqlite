@@ -1,9 +1,15 @@
-rrf$ sed "s/^\(.*\)|$/\1/" RXNREL.RRF   > RXNREL.RRF.sl
-rrf$ sed "s/^\(.*\)|$/\1/" RXNCONSO.RRF   > RXNCONSO.RRF.sl
-sqlite3 rxn.db < ../scripts/mysql/Table_scripts_mysql_rxn.sql 
-sqlite3 rxn.db
-sqlite> .import ./RXNCONSO.RRF.sl  rxnconso
-sqlite> .import ./RXNREL.RRF.sl rxnrel
+# Extract RxNorm full RRF release to current directory
+# then run this file: sh ./import_sqlite
+# then compute links and load into mongodb: python genlinks.py 
+
+sed "s/^\(.*\)|$/\1/" rrf/RXNREL.RRF   > RXNREL.RRF.sl
+sed "s/^\(.*\)|$/\1/" rrf/RXNCONSO.RRF   > RXNCONSO.RRF.sl
+
+sqlite3 rxn.db < scripts/mysql/Table_scripts_mysql_rxn.sql 
+
+echo "
+.import RXNCONSO.RRF.sl  rxnconso
+.import RXNREL.RRF.sl  rxnrel
 CREATE INDEX X_RXNCONSO_STR ON RXNCONSO(STR);
 CREATE INDEX X_RXNCONSO_RXCUI ON RXNCONSO(RXCUI);
 CREATE INDEX X_RXNCONSO_TTY ON RXNCONSO(TTY);
@@ -15,5 +21,4 @@ CREATE INDEX X_RXNREL_RELA ON RXNREL(RELA);
 
 create index X_RXNREL_SUBJECT_PREDICATE  on RXNREL(RXCUI2, RELA);
 create index X_RXNREL_ATOM_PREDICATE  on RXNREL(RXAUI2, RELA);
-   ...> ;
---> 714MB rxn.db
+" | sqlite3 rxn.db
