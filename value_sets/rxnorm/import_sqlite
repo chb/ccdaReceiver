@@ -2,8 +2,8 @@
 # then run this file: sh ./import_sqlite
 # then compute links and load into mongodb: python genlinks.py 
 
-sed "s/^\(.*\)|$/\1/" rrf/RXNREL.RRF   > RXNREL.RRF.sl
-sed "s/^\(.*\)|$/\1/" rrf/RXNCONSO.RRF   > RXNCONSO.RRF.sl
+sed  -e 's/"/""/g' -e "s/'/''/g"  -e "s/^\(.*\)|$/\1/" rrf/RXNCONSO.RRF  > RXNCONSO.RRF.sl
+sed  -e 's/"/""/g' -e "s/'/''/g"  -e "s/^\(.*\)|$/\1/" rrf/RXNREL.RRF  > RXNREL.RRF.sl
 
 sqlite3 rxn.db < scripts/mysql/Table_scripts_mysql_rxn.sql 
 
@@ -13,6 +13,7 @@ echo "
 CREATE INDEX X_RXNCONSO_STR ON RXNCONSO(STR);
 CREATE INDEX X_RXNCONSO_RXCUI ON RXNCONSO(RXCUI);
 CREATE INDEX X_RXNCONSO_TTY ON RXNCONSO(TTY);
+CREATE INDEX X_RXNCONSO_RXAUI ON RXNCONSO(RXAUI);
 CREATE INDEX X_RXNCONSO_CODE ON RXNCONSO(CODE);
 
 CREATE INDEX X_RXNREL_RXCUI1 ON RXNREL(RXCUI1);

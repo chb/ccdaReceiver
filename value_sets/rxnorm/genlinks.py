@@ -42,11 +42,12 @@ def toTreatmentIntents(rxcuis, tty):
 def toTreatmentIntents_helper(rxcui, tty):
     assert tty=='IN'
     ret = []
-    rxauis = doQ("select rxaui from rxnconso where tty='FN' and sab='NDFRT' and rxcui='%s'"%rxcui)
+    # +tty tells sqlite3 planner not to index on tty (use rxcui instead - 1000x speed)
+    rxauis = doQ("select rxaui from rxnconso where +tty='FN' and sab='NDFRT' and rxcui='%s'"%rxcui)
     for a in rxauis:
         a1 = doQ("select rxaui1 from rxnrel where rxaui2='%s' and rela='may_treat'"%a)
-        if len(a1)>0:
-            dz = doQ("select str from rxnconso c where c.tty='FN' and c.sab='NDFRT' and rxaui='%s'"%a1[0])
+        for one_dz in a1:
+            dz = doQ("select str from rxnconso c where c.tty='FN' and c.sab='NDFRT' and rxaui='%s'"%one_dz)
             dz = map(lambda x: x.replace(" [Disease/Finding]", ""), dz)
             ret.extend(dz)
     return ret
