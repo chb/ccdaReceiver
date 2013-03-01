@@ -28,7 +28,5 @@ config.dbstate.on("ready", function(){
     ]);
 
     db.shutdown();
-    config.shutdown();
-
   });
 });

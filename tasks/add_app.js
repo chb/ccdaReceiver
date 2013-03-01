@@ -27,6 +27,5 @@ if (require.main === module){
   module.exports(argv.app);
   config.dbstate.on("ready", function(){
     db.shutdown();
-    config.shutdown();
   });
 }

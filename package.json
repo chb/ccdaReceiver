@@ -8,10 +8,10 @@
   },
   "dependencies": {
     "bson": "*",
-    "connect-powered-by": "0.1.x",
+    "connect-powered-by": "*",
     "async": "*",
     "express": "*",
-    "mongodb": "1.1.11",
+    "mongodb": "*",
     "libxmljs":"*",
     "xdate":"*",
     "optimist":"*",
