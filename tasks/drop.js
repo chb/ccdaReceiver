@@ -8,13 +8,14 @@ module.exports = function(){
   model.User.collection.drop();
   model.Token.collection.drop();
   model.Authorization.collection.drop();
-
 };
 
 if (require.main === module){
   module.exports();
   config.dbstate.on("ready", function(){
-    db.shutdown();
-    config.shutdown();
+    db.patients.dropDatabase(function(err){
+      db.shutdown();
+      config.shutdown();
+    });
   });
 }
