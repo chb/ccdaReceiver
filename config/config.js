@@ -80,6 +80,10 @@ async.parallel([
   connectToDb(mongoRxnormUrl, "rxnorm"),
 ],
 function(err){
+  if(err){
+    console.log(err);
+    throw err;
+  }
   dbstate.emit("ready");
   dbstate.on = function(x, f){if (x==="ready") f();};
 });
