@@ -5,20 +5,22 @@ var model = require('../lib/model');
 var argv = require("optimist").argv;
 var path = require("path");
 var util = require("util");
+var async = require("async");
 var loadUser = loadModel(model.User);
 
-module.exports = function(userlist){
+module.exports = function(userlist, cb){
   if (!util.isArray(userlist)){
     userlist = [userlist];
   }
-  userlist.forEach(loadUser);
+
+  async.each(userlist, loadUser, cb);
 };
 
 function loadModel(m){
-  return function(v) {
+  return function(v, cb) {
     console.log(v);
     var n = new m(v);
-    n.save();
+    n.save(cb);
   };
 };
 
@@ -60,8 +62,9 @@ if (require.main === module){
     return usersById[u];
   });
 
-  module.exports(userlist);
-  config.dbstate.on("ready", function(){
-    db.shutdown();
+  module.exports(userlist, function(){
+    config.dbstate.on("ready", function(){
+      db.shutdown();
+    });
   });
 }

@@ -46,6 +46,7 @@ Controller.launch = function(view) {
 };
 
 var findApp = oauthServer.authorization(function(areq, done) {
+  console.log(areq);
   model.App.findOne({_id: areq.clientID}, function(err, app) {
     if (err) { return done(err); }
     return done(null, app, app.index);
