@@ -3,7 +3,9 @@ CCDA's data model (but applying friendly names to properties whenever possible).
 
 Inspired by popHealth's approach to mapping C32 (+ more Linked Data flavor)
 
-Setup
+## For automated setup, see https://github.com/jmandel/ansible-ccda
+
+Manual Setup
 ```
 $ git clone https://github.com/chb/json_ccda
 $ cd json_ccda
