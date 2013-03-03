@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Growth Charts Application</title>
+        
+        <!-- BPC stylesheets-->
+        <link rel="stylesheet" href="css/gc-screen.css" type="text/css" media="screen" />
+        
+        <!-- Standard JS Libraries -->
+        <script src="lib/jquery.js" type="text/javascript"></script>
+        <script src="lib/raphael.js" type="text/javascript"></script>
+        
+        <!-- GC Modules -->
+        <script src="js/gc-charts-data.js" type="text/javascript"></script>
+        <script src="js/gc-statistics.js" type="text/javascript"></script>
+        <script src="js/gc-chart.js" type="text/javascript"></script>
+        <script src="js/gc-config.js" type="text/javascript"></script>
+        <script src="js/gc-graph.js" type="text/javascript"></script>
+    </head>
+    
+    <body>
+    
+        <div id="chart"></div>
+        
+        <div id="selector">
+            Select chart:
+            <select id="model">
+                <option></option>
+            </select>
+            
+            Select gender:
+            <input type="radio" name="radGender" id="genderMale" value="male" checked="checked" />
+            <label for="genderMale">male</label>
+            <input type="radio" name="radGender" id="genderFemale" value="female" />
+            <label for="genderFemale">female</label>
+        </div>
+        
+        <script>
+            $(document).ready(function() {            
+                function updateModel () {
+                    var set = GC.DATA_SETS[$('#model').val()],
+                        gender = $('input:radio[name=radGender]:checked').val();
+                        
+                    if (set.type == "LMS") {
+                        GC.chartSettings.vAxisLabel = set.units;
+                        GC.chartSettings.graphLabel = set.description + " (" + set.source + ")";
+                        var data = [];
+                        data[0] = {label: 3, data: GC.generateCurveSeries (set, gender, 0.03)};
+                        data[1] = {label: 15, data: GC.generateCurveSeries (set, gender, 0.15)};
+                        data[2] = {label: 50, data: GC.generateCurveSeries (set, gender, 0.50)};
+                        data[3] = {label: 85, data: GC.generateCurveSeries (set, gender, 0.85)};
+                        data[4] = {label: 97, data: GC.generateCurveSeries (set, gender, 0.97)};
+                        GC.drawGraph ("chart", data, []);
+                    } else if (set.type == "points") {
+                        GC.chartSettings.vAxisLabel = set.units;
+                        GC.chartSettings.graphLabel = set.description + " (" + set.source + ", updated " + set.updated + ")";
+                        var data = [];
+                        var sets = set.data[gender]
+                        for (var label in sets) {
+                            data.push({label: label, data: GC.convertPointsSet (sets[label])});
+                        }
+                        data.sort(function (a,b) {
+                            return a.data[0].y - b.data[0].y;
+                        });
+                        GC.drawGraph ("chart", data, []);
+                    }
+                }
+                
+                var out = "";
+                var dataSets = [];
+                var i;
+                
+                for (i in GC.DATA_SETS) {
+                    dataSets.push ({id:i, description:GC.DATA_SETS[i].description + " (" + GC.DATA_SETS[i].source + ")"});
+                }
+                
+                dataSets.sort(function (a,b) {
+                    var strA = a.description,
+                        strB = b.description;
+                    if (strA < strB) return -1;
+                    else if (strA == strB) return 0;
+                    else return 1;
+                });
+                
+                for (i = 0; i < dataSets.length; i++) {
+                    out += "<option value='" + dataSets[i].id + "'>" + dataSets[i].description  + "</option>\n";
+                }
+                
+                $('#model').html(out);
+                $('#model').change(updateModel);
+                $("input:radio[name=radGender]").change(updateModel);
+                updateModel();
+            });
+        </script>
+    </body>
+    
+</html>

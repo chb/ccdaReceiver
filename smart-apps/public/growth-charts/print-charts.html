@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html class="before-print">
+	<head>
+		<meta charset="UTF-8">
+		<title>Growth Charts Application</title>
+		
+		<!--link rel="stylesheet" type="text/css" href="css/reset.css" />
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		
+		<link rel="stylesheet" type="text/css" href="themes/custom-theme/jquery-ui-1.8.18.custom.css" /-->
+		<link rel="stylesheet" type="text/css" href="css/gc-pview.css" />
+		<link rel="stylesheet" type="text/css" href="css/print.css" />
+		<link rel="stylesheet/less" type="text/css" href="css/style.less" />
+		
+		<!-- Standard JS Libraries -->
+        <script src="lib/smart-api-client-0.6-dev.js"></script>
+        <script src="lib/jquery-1.8.2.js"></script>
+		<script src="lib/jquery-ui-1.9.1.js"></script>
+        <script src="lib/raphael.js"></script>
+        <script src="lib/xdate.js"></script>
+		
+		<!-- GC Modules -->
+		<script src="js/util.js"></script>
+		<script src="js/gc-smart-data.js"></script>
+		<script src="js/gc-sample-patients.js"></script>
+		<script src="js/gc-model.js"></script>
+		<script src="js/gc-chart-config.js"></script>
+		<script src="js/gc-translations.js"></script>
+		<script src="js/gc-pointset.js"></script>
+        <script src="js/gc-charts-data.js"></script>
+        <script src="js/gc-statistics.js"></script>
+        <script src="js/gc-chart.js"></script>
+        <script src="js/gc-pview.js"></script>
+        
+		<script src="js/print2.js"></script>
+		<script src="js/chart-pane.js"></script>
+		<script src="js/charts/chart.js"></script>
+		<script src="js/charts/weight-chart.js"></script>
+		<script src="js/charts/head-chart.js"></script>
+        <script src="js/charts/length-chart.js"></script>
+		<script src="js/charts/percentile-chart.js"></script>
+		<script src="js/charts/body-mass-index-chart.js"></script>
+		<script src="js/charts/chart-stack.js"></script>
+		<script src="js/gc-data-model.js"></script>
+		<script src="js/gc-grid-view.js"></script>
+        
+		<script type="text/javascript">
+			var lessCfg = {
+				color: "#F00",
+				hue : 36,
+				saturation : 50,
+				lightness : 50
+			};
+			
+			less = {
+				env: "production",
+				//async: false,       // load imports async
+				//fileAsync: false,   // load imports async when in a page under 
+									// a file protocol
+				//poll: 1000,         // when in watch mode, time in ms between polls
+				functions: {// user functions, keyed by name
+					"main-color"     : function() { return { toCSS : function() { return "hsl(" + lessCfg.hue + "," + lessCfg.saturation + "%," + lessCfg.lightness + "%)"; } } },
+					"app-hue"        : function() { return lessCfg.hue; },
+					"app-saturation" : function() { return lessCfg.saturation; },
+					"app-lightness"  : function() { return lessCfg.lightness; },
+					"pref"           : function(path) { 
+						//console.log(this, arguments);
+						//var str = color; 
+						var value = GC.Preferences.prop(path.value);
+						return new(less.tree.Quoted)('"' + value + '"', value,true,1);
+					},
+					readableColor : function(c, treshold, contrast) {
+						var value = GC.Util.readableColor(c.value, treshold.value, contrast.value);
+						return new(less.tree.Quoted)('"' + value + '"', value,true,1);
+					}
+				},      
+				dumpLineNumbers: "comments", // or "mediaQuery" or "all"
+				//relativeUrls: false,// whether to adjust url's to be relative
+									// if false, url's are already relative to the
+									// entry less file
+				//rootpath: ":/a.com/"// a path to add on to the start of every url 
+									//resource
+				
+			};
+		</script>
+		<script src="lib/less-1.3.3.min.js"></script>
+		
+		
+		
+	</head>
+	<body>
+	
+	<div id="header">
+		<h1>Patient's Name</h1>
+	</div>
+	<div class="frame">
+		<div id="timeline-top" class="timeline">
+			<div class="years"></div>
+			<div class="months"></div>
+			<div class="weeks"></div>
+			<div class="days"></div>
+			<div class="gest"></div>
+		</div>
+		<div id="stage">
+			<div id="view-clinical" class="tab-panel">
+				<div class="stage-1"></div>
+			</div>
+			<div id="view-parental" class="tab-panel">
+				<div id="pview-wrapper">
+					
+					<!-- left-column ------------------------------------------- -->
+					<div class="left-column">
+						<div id="PatientHeader">
+							<img id="picture" src="img/pview/PlacHholderAvatar.png" />
+							<div id = "PatientHeadertexts">
+								<div id="nameText" class="heading">NAME</div>
+								<div class="gender-color sub-heading" id="nameSubtitle">premature</div>
+							</div>
+						</div>
+						
+						<div id="PaperLeft">
+							<div id="Paper"></div>
+							<div id="infobox">
+								<div class="gender-bg" id="gender" class="Infobox">
+									<p id="genderText">Gender: </p>
+									<p id="genderData"></p>
+								</div>
+								<div class="gender-bg" id="age">
+									<p id="ageText">Age: </p>
+									<p id="ageData"></p>
+								</div>
+								<div class="gender-bg" id="DOB">
+									<p id="DOBText">DOB: </p>
+									<p id="DOBData"></p>
+								</div>
+								<div class="gender-bg" id="Gestation">
+									<p id="GestationText">Gestation: </p>
+									<p id="GestationData"></p>
+								</div>
+								<div class="gender-bg" id="Allergies">
+									<p id="AllergiesText">Allergies: </p>
+									<p id="AllergiesData"></p>
+								</div>
+								<div class="gender-bg" id="Controls">
+									<button type="button" class="gender-button" id="EditPatient">Edit Patient</button>
+									<button type="button" class="gender-button" id="AddPhoto">AddPhoto</button>
+								</div>
+							</div>
+						</div>
+				
+					</div>
+					
+					<!-- right-column ------------------------------------------ -->
+					<div class="right-column">
+						<div id="PredictedHeightHeader">
+							<div id="nameTextPredicted" class="heading">NAME'S HEIGHT</div>
+							<div class="gender-color sub-heading" id="predictedSubtitle">Based on Median Parent Height</div>
+						</div>
+						
+						<div id="RightPaper">
+							<div id="PaperPredictedHeight"></div>
+							<div class="gender-bg" id="PredictedHeightFooter">
+								<button type="button" onclick="heightMotherEdit()" class="gender-button" id="EditMother">Edit Mother's Height</button>
+								<button type="button" onclick="heightFatherEdit()" class="gender-button" id="EditFather">Edit Father's Height</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="view-table" class="tab-panel"></div>
+		</div>
+		<div id="timeline-bottom" class="timeline">
+			<div class="gest"></div>
+			<div class="days"></div>
+			<div class="weeks"></div>
+			<div class="months"></div>
+			<div class="years"></div>
+		</div>
+	</div>
+	</body>
+</html>

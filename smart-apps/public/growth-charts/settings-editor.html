@@ -1,0 +1,478 @@
+<link rel="stylesheet" type="text/css" href="css/preferences-editor.css" />
+<div id="preferences-editor">
+	<table>
+		<tr>
+			<td style="vertical-align:top">
+				<select id="pref-view" size="10">
+					<optgroup label="Appearance">
+						<option value="panel-colors" selected="selected">Colors</option>
+						<option value="panel-fonts">Fonts</option>
+					</optgroup>
+					<optgroup label="Behavior">
+						<option value="panel-behavior">Charts Sizing</option>
+						<option value="panel-chart-selection">Default Charts</option>
+						<option value="panel-events">Charts Mouse Effects</option>
+						<option value="panel-timeline">Timeline (Charts X Axis)</option>
+					</optgroup>
+					<optgroup label="Miscellaneous">
+						<option value="panel-dates">Date &amp; Time</option>
+						<option value="panel-units">Units of Measure</option>
+					</optgroup>
+				</select>
+			</td>
+			<td style="vertical-align:top;padding-left:10px;">
+				<div id="panel-colors" class="prefs-panel">
+					<h1>Colors</h1>
+					<b>Color Preset</b>
+					<div id="color-presets-list"></div>
+					<br />
+					<table>
+						<tr>
+							<td width="100%"><b>Saturation &nbsp;</b></td>
+							<td><b class="slider-label">-</b></td>
+							<td><div id="slider-saturation"></div></td>
+							<td><b class="slider-label">+</b></td>
+						</tr>
+						<tr>
+							<td width="100%"><b>Brightness &nbsp;</b></td>
+							<td><b class="slider-label">-</b></td>
+							<td><div id="slider-brightness"></div></td>
+							<td><b class="slider-label">+</b></td>
+						</tr>
+						<tr>
+							<td colspan="4"><div class="separator"></div></td>
+						</tr>
+						<tr>
+							<td colspan="2"><b>Preview</b></td>
+							<td colspan="2">
+								<div id="preset-preview">
+									<div class="color" title="Length"></div>
+									<div class="color" title="Weight"></div>
+									<div class="color" title="Head C"></div>
+									<div class="color" title="BMI"></div>
+									<div class="color" title="Primary selection"></div>
+									<div class="color" title="Secondary selection"></div>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="4"><br /></td>
+						</tr>
+					</table>
+					
+					
+					
+					<!--table>
+						<tr>
+							<td width="100%">Length and Stature</td>
+							<td><input type="color" name="lengthAndStature"/></td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Weight</td>
+							<td><input type="color" name="weight"/></td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Head Circumference</td>
+							<td><input type="color" name="headc"/></td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Body Mass Iindex</td>
+							<td><input type="color" name="bmi"/></td>
+						</tr>
+						
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Selection Color</td>
+							<td><input type="color" name="selectionLine.stroke" /></td>
+						</tr>
+						
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Mouse-over Selection Color</td>
+							<td><input type="color" name="hoverSelectionLine.stroke" /></td>
+						</tr>
+					</table-->
+				</div>
+				<div id="panel-fonts" class="prefs-panel">
+					<h1>Fonts</h1>
+					<table>
+						<tr>
+							<td width="100%">Font Size</td>
+							<td><input name="fontSize" type="text" min="10" max="18" value="14" class="step-input" /></td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Font Family</td>
+							<td>
+								<select name="fontFamily">
+									<option value="'Helvetica Neue', Arial, Helvetica, sans-serif">Helvetica Neue</option>
+									<option value="Verdana, sans-serif">Verdana</option>
+									<option value="Arial">Arial</option>
+									<option value="Tahoma">Tahoma</option>
+									<option value="'MS Sans Serif', sans-serif">MS Sans Serif</option>
+									<option value="Courier, monospace">Courier</option>
+									<optgroup label="Generic Fonts">
+										<option value="sans-serif">Sans Serif</option>
+										<option value="serif">Serif</option>
+										<option value="monospace">Fixed Width</option>
+									</optgroup>
+								</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div id="panel-behavior" class="prefs-panel">
+					<h1>Charts</h1>
+					<table>
+						<tr>
+							<td width="100%">Aspect Ratio</td>
+							<td>
+								<select name="aspectRatio">
+									<option value="0.625">1:1.6 (CDC)</option>
+									<option value="1">1:1 (square)</option>
+									<option value="0.5">2:1</option>
+									<option value="0.6666666666666667">3:2</option>
+									<option value="0.75">4:3</option>
+									<option value="0.6">5:3</option>
+									<option value="0.375">16:9</option>
+									<option value="0">none (stretch)</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Max Width</td>
+							<td><input name="maxWidth" type="text"/></td>
+						</tr>
+					</table>
+				</div>
+				<div id="panel-events" class="prefs-panel">
+					<h1>Charts Mouse Effects</h1>
+					<label>
+						<input type="checkbox" name="higlightTimelineRanges" />
+						Highlight time ranges on timeline mouse over
+					</label><br />
+					<label>
+						<input type="checkbox" name="timeline.interactive" />
+						Make selection on timeline items click
+					</label><br />
+					<label>
+						<input type="checkbox" name="secondarySelectionEnabled" />
+						Selection preview on data points hover
+					</label><br />
+					<label>
+						<input type="checkbox" name="primarySelectionEnabled" />
+						Selection on canvas click
+					</label><br />
+					<label>
+						<input type="checkbox" name="pointDoubleClickEdit" />
+						Edit record on point double click
+					</label><br />
+					<label>
+						<input type="checkbox" name="columnResizing.enabled" />
+						Enable column resizing
+					</label>
+					<br/>
+				</div>
+				<div id="panel-timeline" class="prefs-panel">
+					<h1>Timeline (Charts X Axis)</h1>
+					Choose the max. duration of the observed time <br />
+					interval for each time unit:
+					<div class="separator"></div>
+					<table>
+						<tr>
+							<td width="100%"><b>Days</b></td>
+							<td>&nbsp;&nbsp;from</td>
+							<td><input type="text" id="timeline-days-from" value="0" class="timeline-spinner ui-state-disabled" /></td>
+							<td>&nbsp;&nbsp;to</td>
+							<td><input type="text" id="timeline-days-to" class="timeline-spinner"></td>
+						</tr>
+						<tr>
+							<td width="100%"><b>Weeks</b></td>
+							<td>&nbsp;&nbsp;from</td>
+							<td><input type="text" id="timeline-weeks-from" class="timeline-spinner" /></td>
+							<td>&nbsp;&nbsp;to</td>
+							<td><input type="text" id="timeline-weeks-to" class="timeline-spinner" /></td>
+						</tr>
+						<tr>
+							<td width="100%"><b>Months</b></td>
+							<td>&nbsp;&nbsp;from</td>
+							<td><input type="text" id="timeline-months-from" class="timeline-spinner" /></td>
+							<td>&nbsp;&nbsp;to</td>
+							<td><input type="text" id="timeline-months-to" class="timeline-spinner" /></td>
+						</tr>
+						<tr>
+							<td width="100%"><b>Years</b></td>
+							<td>&nbsp;&nbsp;from</td>
+							<td><input type="text" id="timeline-years-from" class="timeline-spinner" /></td>
+							<td>&nbsp;&nbsp;to</td>
+							<td><input type="text" id="timeline-years-to" value="Infinity" class="timeline-spinner ui-state-disabled" /></td>
+						</tr>
+					</table>
+					<br />
+					<b>Preview:</b>
+					<div class="separator"></div>
+					<div id="timeline-preview">
+						<div class="days">Days<div></div></div>
+						<div class="weeks">Weeks<div></div></div>
+						<div class="months">Months<div></div></div>
+						<div class="years">Years<div></div></div>
+					</div>
+					
+					
+				</div>
+				<div id="panel-chart-selection" class="prefs-panel">
+					<h1>Control Chart Selection (Default)</h1>
+					<table>
+						<tr>
+							<td width="100%">Premature</td>
+							<td>
+								<select name="defaultPrematureChart">
+									<option value="FENTON">Fenton</option>
+									<option value="CDC">CDC</option>
+									<option value="WHO">WHO</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td width="100%">0-2 Years Old</td>
+							<td>
+								<select name="defaultBabyChart">
+									<option value="FENTON">Fenton</option>
+									<option value="CDC">CDC</option>
+									<option value="WHO">WHO</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td width="100%">2-20 Years Old</td>
+							<td>
+								<select name="defaultChart">
+									<option value="FENTON">Fenton</option>
+									<option value="CDC">CDC</option>
+									<option value="WHO">WHO</option>
+								</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div id="panel-dates" class="prefs-panel">
+					<h1>Date &amp; Time</h1>
+					<table>
+						<tr title="For reference: http://arshaw.com/xdate/#Formatting">
+							<td width="100%">Date Format</td>
+							<td>
+								<select name="dateFormat">
+									<option value="ddMMMyyyy">ddMMMyyyy</option>
+									<option value="dd MMM yyyy">dd MMM yyyy</option>
+									<option value="MM/dd/yy">MM/dd/yy</option>
+									<option value="dd/MM/yy">dd/MM/yy</option>
+									<option value="dd-MM-yyyy">dd-MM-yyyy</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td>Preview:</td>
+							<td><div class="preview" id="preview-date"></div></td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr title="For reference: http://arshaw.com/xdate/#Formatting">
+							<td>Time Format</td>
+							<td>
+								<select name="timeFormat">
+									<option value="h:mm tt">h:mm tt</option>
+									<option value="h:mm TT">h:mm TT</option>
+									<option value="HH:mm">HH:mm</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td>Preview:</td>
+							<td><div class="preview" id="preview-time"></div></td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2"><b>Intervals and Durations</b><br /><br /></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>Precision</td>
+							<td>
+								<select name="timeInterval-precision">
+									<option value="0">Years</option>
+									<option value="1">Months</option>
+									<option value="2">Weeks</option>
+									<option value="3">Days</option>
+									<option value="4">Hours</option>
+									<option value="5">Minutes</option>
+									<option value="6">Seconds</option>
+									<option value="7">Milliseconds</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td>Separator</td>
+							<td>
+								<select name="timeInterval.separator" style="font-weight: bold;font-family: monospace;">
+									<option value=" ">&nbsp;</option>
+									<option value=" - ">&nbsp;-&nbsp;</option>
+									<option value=", ">,&nbsp;</option>
+									<option value=":">:</option>
+									<option value=" : ">&nbsp;:&nbsp;</option>
+									<option value="/">/</option>
+									<option value=" / ">&nbsp;/&nbsp;</option>
+								</select>
+							</td>
+						</tr>
+						<tr title="Only show the first N segments of the result">
+							<td>Limit</td>
+							<td>
+								<select name="timeInterval.limit">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
+									<option value="5">5</option>
+									<option value="6">6</option>
+									<option value="7">7</option>
+									<option value="8">8</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td>Fill with zero</td>
+							<td><input type="checkbox" name="timeInterval.zeroFill"/></td>
+						</tr>
+						<tr>
+							<td>Preview:</td>
+							<td><div class="preview" id="preview-interval"></div></td>
+						</tr>
+					</table>
+				</div>
+				<div id="panel-units" class="prefs-panel">
+					<h1>Units of Measure</h1>
+					<table class="round-precisions ui-state-disabled">
+						<tr>
+							<td colspan="3"><b>Rounding precisions</b><br>(The max. number of digits after the decimal point)</td>
+						</tr>
+						<tr>
+							<td colspan="3">
+								<div class="separator"></div>
+							</td>
+						</tr>
+						<tr>
+							<td width="100%"></td>
+							<td><b> &nbsp; Regular</b></td>
+							<td><b> &nbsp; NICU</b></td>
+						</tr>
+						<tr>
+							<td width="100%">Length/Stature</td>
+							<td><select name="roundPrecision.length.std"></select></td>
+							<td><select name="roundPrecision.length.nicu"></select></td>
+						</tr>
+						<tr>
+							<td width="100%">Weight</td>
+							<td><select name="roundPrecision.weight.std"></select></td>
+							<td><select name="roundPrecision.weight.nicu"></select></td>
+						</tr>
+						<tr>
+							<td width="100%">Head Circumference</td>
+							<td><select name="roundPrecision.headc.std"></select></td>
+							<td><select name="roundPrecision.headc.nicu"></select></td>
+						</tr>
+						<tr>
+							<td width="100%">Body Mass Index</td>
+							<td><select name="roundPrecision.bmi.std"></select></td>
+							<td><select name="roundPrecision.bmi.nicu"></select></td>
+						</tr>
+						<tr>
+							<td width="100%">Percentages</td>
+							<td><select name="roundPrecision.percentage.std"></select></td>
+							<td><select name="roundPrecision.percentage.nicu"></select></td>
+						</tr>
+						<tr>
+							<td width="100%">Percentiles</td>
+							<td><select name="roundPrecision.percentile.std"></select></td>
+							<td><select name="roundPrecision.percentile.nicu"></select></td>
+						</tr>
+						<tr>
+							<td width="100%">Z Score</td>
+							<td><select name="roundPrecision.zscore.std"></select></td>
+							<td><select name="roundPrecision.zscore.nicu"></select></td>
+						</tr>
+						<tr>
+							<td>Velocity Denominator</td>
+							<td>
+								<select name="" class="velocity-denominator">
+									<option>Daily</option>
+									<option>Weekly</option>
+									<option>Monthly</option>
+									<option>Yearly</option>
+								</select>
+							</td>
+							<td>
+								<select name="" class="velocity-denominator">
+									<option>Daily</option>
+									<option>Weekly</option>
+									<option>Monthly</option>
+									<option>Yearly</option>
+								</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2"><div class="separator"></div></td>
+		</tr>
+		<tr class="footer">
+			<td><input type="button" value=" Reset to Defaults " class="reset" /></td>
+			<td style="text-align:right">
+				<input type="button" value="  Close  " class="cancel" />
+				<input type="button" value="  Apply  " class="apply ui-state-disabled" />
+				<input type="button" value="  Save  " class="save ui-state-disabled" />
+			</td>
+		</tr>
+	</table>
+</div>
+<script src="js/settings-editor.js"></script>

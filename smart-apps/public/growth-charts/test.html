@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!-- 
+/**
+*  Test Growth Charts Statistics
+*
+*  Code by: Nikolai Schwertner, MedAppTech
+*/
+-->
+<html lang="en">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Test Growth Charts Statistics</title>
+        
+        <!-- Standard JS Libraries -->
+        <script src="lib/jquery.js" type="text/javascript"></script>
+        
+        <!-- GC Modules -->
+        <script src="js/gc-charts-data.js" type="text/javascript"></script>
+        <script src="js/gc-statistics.js" type="text/javascript"></script>
+        <script src="js/gc-chart.js" type="text/javascript"></script>
+    </head>
+    
+    <body>
+    
+        <pre id="data"></pre>
+        
+        <script>
+        (function () {
+            "use strict";
+            
+            var out = "";
+            
+            out += "CDC Example 1: " + GC.findXFromPercentile(0.05, GC.DATA_SETS.CDC_WEIGHT_INF, "male", 9.5) + "\n";
+            out += "CDC Example 2: " + GC.findPercentileFromX(9.7, GC.DATA_SETS.CDC_WEIGHT_INF, "male", 9.5) + "\n\n";
+            
+            var points = GC.generateCurveSeries (GC.DATA_SETS.CDC_STATURE, "male", 0.5);
+            
+            out += "CDC_STATURE Chart (50th percentile):\n";
+            
+            for (var i = 0; i < points.length; i++)
+                out += "x: " + points[i].x + ", y: " + points[i].y + "\n";
+            
+
+			out += "\nData sets:\n";
+            out += JSON.stringify(GC.DATA_SETS, null, "   ");
+            
+            $("#data").text(out);
+            
+        }());
+        </script>
+        
+    </body>
+</html>

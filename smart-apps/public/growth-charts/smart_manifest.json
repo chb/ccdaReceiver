@@ -1,0 +1,12 @@
+{
+  "_id": "growth-charts",
+  "oauthClientType": "public",
+  "name" : "Growth Charts",
+  "description" : "The SMART Pediatric Growth Chart app brings together design and medical specialists to craft a \"return to the future\" software for support both pediatric needs and parent-communication capabilities",
+  "author" : "Design by Fjord; App by MedAppTech.",
+  "version" : ".1a",
+  "mode" : "ui",
+  "scope" : "patient",
+  "index" :  "{{app-root}}/growth-charts/index.html",
+  "icon" :  "{{app-root}}/growth-charts/icon.png"
+}

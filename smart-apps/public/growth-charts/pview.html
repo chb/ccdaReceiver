@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Parent View Alpha 0.8</title>
+        <link rel="stylesheet" type="text/css" href="css/reset.css" />
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css">
+		
+		<!-- Standard JS Libraries -->
+        <script src="lib/smart-api-client-0.5.js" type="text/javascript"></script>
+        <script src="lib/jquery-1.8.2.js"></script>
+		<script src="lib/jquery-ui-1.9.1.js"></script>
+        <script src="lib/raphael.js" type="text/javascript"></script>
+        <script src="lib/xdate.js" type="text/javascript"></script>
+        
+        <!-- GC Modules -->
+        <script src="js/gc-charts-data.js" type="text/javascript"></script>
+        <script src="js/gc-statistics.js" type="text/javascript"></script>
+        <script src="js/gc-smart-data.js" type="text/javascript"></script>
+        <script src="js/gc-chart.js" type="text/javascript"></script>
+        <script src="js/gc-chart-config.js" type="text/javascript"></script>
+        <script src="js/gc-graph.js" type="text/javascript"></script>
+        <script src="js/gc-pview-config.js" type="text/javascript"></script>
+		<script src="js/gc-percenitile-chart.js" type="text/javascript"></script>
+        <script src="js/gc-pview.js" type="text/javascript"></script>
+        <script src="js/util.js" type="text/javascript"></script>
+		<script src="js/chart-pane.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div id="pview1"></div>
+        <div id="pview2"></div>
+        <div id="pview3"></div>
+        <script>
+			var Paper = Raphael(0,0, 1280, 1024);
+			/*var Tooltip1 = new ToolTip(20, 20, 20, 50, 'green', 'hello!','white', Paper);
+			var Tooltip2 = new ToolTip(20, 50, 20, 50, 'red', 'hello!','white', Paper);
+			var Tooltip3 = new ToolTip(20, 80, 20, 50, 'yellow', 'hello!','white', Paper);
+			//Tooltip1.moveTooltip(1230,200);
+			//Tooltip2.moveTooltip(500,1);
+			//Tooltip3.moveTooltip(200,211);
+			Tooltip1.moveVertically(10);
+			Tooltip2.moveVertically(30);
+			Tooltip3.moveVertically(50);	
+			Tooltip3.hide();*/
+			drawChartBackGround(20,20, Paper,Paper, "ParentView", 600, 5);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Parent View Alpha 0.5</title>
+        <script type="text/javascript" src="lib/raphael.js"></script>
+        <script type="text/javascript" src="js/gc-charts-data.js"></script>
+        <script type="text/javascript" src="js/gc-statistics.js"></script>
+        <script type="text/javascript" src="js/gc-pview-config.js"></script>
+        <script type="text/javascript" src="js/gc-pview.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/gc-pview2.css"/>
+    </head>
+    <body>
+        <div id="pview1"></div>
+        <div id="pview2"></div>
+        <div id="pview3"></div>
+        <script>
+            var Paper = Raphael(0,0,700,400);
+			drawChartBackGround(20,100, Paper,Paper, "MainView");
+        </script>
+    </body>
+</html>

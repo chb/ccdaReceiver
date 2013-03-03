@@ -1,0 +1,78 @@
+<style type="text/css">
+#annotations-list .annotation-container {
+	margin: 16px 0 0;
+	font-family: Tahoma, sans-serif;
+	font-size: 0.9em;
+}
+#annotations-list .annotation-print {
+	float: right;
+}
+#annotations-list .annotation-header {
+	border-bottom: 1px solid #CCC;
+	padding: 0.3em;
+	margin-bottom: 1px;
+	background: #BDC7CD;
+	color: #323E47;
+	font-weight: bold;
+	border-radius: 5px 5px 0 0;
+}
+#annotations-list .annotation-header:after {
+	content: "";
+	display: block;
+	clear: both;
+}
+#annotations-list .annotation-content {
+	line-height: normal;
+	color : #323E47;
+	background: #E1EBF1;
+	padding: 0.3em;
+	border-radius: 0 0 5px 5px;
+}
+#annotations-list h2 {
+	font-size: 1.5em;
+	font-family: Arial,sans-serif;
+}
+</style>
+<div id="annotations-list"></div>
+<div id="annotation-template" style="display:none">
+	<div class="annotation-container">
+		<div class="annotation-header">
+		<!--a class="annotation-print">Print</a-->
+		{date}
+		</div>
+		<div class="annotation-content">{content}</div>
+	<div>
+</div>
+<script>
+(function() {
+	
+	function parseTemplate(tpl, data) {
+		if (!data || $.isEmptyObject(data)) {
+			return tpl;
+		}
+		var out = tpl, reg;
+		$.each(data, function(i, o) {
+			reg = new RegExp("\\{" + i + "\\}", "g");
+			out = out.replace(reg, o);
+		});
+		return out.replace(/\{[^\}]*\}/g, "");
+	}
+	
+	var patient = GC.App.getPatient(),
+		list = $("#annotations-list"),
+		tpl = $("#annotation-template").html();
+		
+	if (!patient.annotations.length) {
+		list.html('<h2>This patient has no annotations.</h2>');
+	} else {
+		list.html('<h2><a href="#" style="float:right;font-size:12px;">Print all</a>' + patient.name + ' - Annotations</h2>');
+		$.each(patient.annotations, function(i, o) {
+			list.append(parseTemplate(tpl, {
+				date   : new GC.TimeInterval(patient.DOB).setMonths(o.agemos).toString(GC.chartSettings.timeInterval),
+				content: o.annotation.txt
+			}));
+		});
+	}
+	
+})();
+</script>
