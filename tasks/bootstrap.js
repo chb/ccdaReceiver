@@ -29,6 +29,7 @@ config.dbstate.on("ready", function(){
       var add_app = require("./add_app");
       add_app([
         __dirname + "/../smart-apps/public/bp-centiles/smart_manifest.json",
+        __dirname + "/../smart-apps/public/growth-chart/smart_manifest.json",
         __dirname + "/../smart-apps/public/cardiac-risk/smart_manifest.json",
         __dirname + "/../smart-apps/public/twinlist/smart_manifest.json"
       ], cb);
