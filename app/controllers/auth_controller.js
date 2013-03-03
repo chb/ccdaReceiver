@@ -11,6 +11,8 @@ var oauthServer = app.get('oauth2server');
 var Controller =  module.exports = {};
 Controller.needLogin = function(view){
   return function(req, res, next){
+    console.log("need login", req.authInfo);
+    console.log("need login", req);
     if (!req.user) {
       return res.render(view);
     }

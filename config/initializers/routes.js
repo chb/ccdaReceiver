@@ -2,6 +2,7 @@ var passport = require('passport');
 var config = require('../index');
 var app = config.app;
 
+var App = require('../../app/controllers/app_controller');
 var Auth = require('../../app/controllers/auth_controller');
 var CCDA = require('../../app/controllers/ccda_receiver_controller');
 var ABBI = require('../../app/controllers/abbi_controller');
@@ -12,6 +13,11 @@ app.get('/', function(req,res){ res.redirect("/ui"); });
 app.post('/auth/browserid', 
   passport.authenticate('browserid'), 
   Auth.browseridresponse
+);
+
+app.get('/auth/test', 
+  passport.authenticate('test'), 
+  function(req, res){res.redirect("/ui");}
 );
 
 app.all('/ui*', 
@@ -52,6 +58,11 @@ app.get('/internal/getOnePatient/:pid',
 );
 
 app.post('/internal/addPatient/:pid', Patient.document);
+
+app.get('/internal/getApps', 
+  Auth.needLogin(),
+  App.main
+);
 
 app.all('/patients/:pid*', Auth.tokenHasPatientAccess);
 

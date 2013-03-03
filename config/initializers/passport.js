@@ -8,16 +8,46 @@ var passport = require('passport')
 var app = config.app;
 
 function deserialize(email, done) {
+  console.log("deflate", email);
   model.User.findOne({_id: email}, done);
 };
 
 passport.serializeUser(function(user, done) {
-  winston.log(user);
+  winston.log("serialize",user);
   done(null, user._id);
 });
 
 passport.deserializeUser(deserialize);
 
+function TestStrategy(email){
+  this.name='test';
+  this.user = email || 'test@host.com';
+};
+
+TestStrategy.prototype.authenticate = function(req){
+  console.log("TEST strategy tryuot", req.query);
+  if (req.query["password"] === "secret") 
+  this.success({_id: req.query["email"], roles: ["provider", "admin"] });
+};
+
+if (process.env.ENVIRONMENT === "test") 
+passport.use(new TestStrategy());
+console.log("using a TS");
+
+module.exports = function() {
+  this.use(express.errorHandler());
+  passport.use(new TestStrategy());
+
+ this._routes._http.post('/auth/test', 
+    passport.authenticate('test'),
+    function(req, res) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(req.user));
+    }
+  );
+
+
+}
 passport.use(
   new BrowserIDStrategy({
     audience: config.publicUri

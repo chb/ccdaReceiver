@@ -89,9 +89,10 @@ angular.module('ccdaReceiver').controller("SelectPatientController",
 
 
   angular.module('ccdaReceiver').controller("PatientViewController",  
-    function($scope, patient, patientSearch, $routeParams, $rootScope, $location) {
+    function($scope, patient, app, patientSearch, $routeParams, $rootScope, $location) {
       $scope.patient = {};
       $scope.publicUri = publicUri;
+      $scope.all_apps = app.getApps();
       $scope.patientHelper = patient;
       $scope.patientView = function(){
         return ($scope.patient && angular.toJson($scope.patient, true));

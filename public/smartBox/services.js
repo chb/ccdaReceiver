@@ -78,4 +78,15 @@ angular.module('smartBox').factory('user', function() {
   };
 });
 
+angular.module('smartBox').factory('app', function() {
+  return {
+    getApps: function(){
+      return $.ajax({
+        url:publicUri+"/internal/getApps/",
+        dataType:"json"
+      });
+    }
+  };
+});
+
 
