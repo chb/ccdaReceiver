@@ -54,8 +54,13 @@ angular.module('smartBox').factory('patient', function() {
       return p._id.split(RegExp("/")).slice(-1)[0];
     },
     name: function(p){
-      var ret = p.name.givens.join(" ");
-      ret =  ret + " " + p.name.family;
+      var ret = "";
+      if(p.name && p.name.givens) {
+        ret += p.name.givens.join(" ");
+      }
+      if(p.name && p.name.family){
+        ret += " " + p.name.family;
+      }
       return ret;
     }
   };
@@ -78,15 +83,17 @@ angular.module('smartBox').factory('user', function() {
   };
 });
 
-angular.module('smartBox').factory('app', function() {
+angular.module('smartBox').factory('app', ['$http',function($http) {
   return {
     getApps: function(){
-      return $.ajax({
-        url:publicUri+"/internal/getApps/",
-        dataType:"json"
+      return $http({
+        url:publicUri+"/internal/getApps",
+        method: "GET",
+        dataType:"json",
+        witCredentials: true
       });
     }
   };
-});
+}]);
 
 

@@ -32,7 +32,6 @@ TestStrategy.prototype.authenticate = function(req){
 
 if (process.env.ENVIRONMENT === "test") 
 passport.use(new TestStrategy());
-console.log("using a TS");
 
 module.exports = function() {
   this.use(express.errorHandler());
