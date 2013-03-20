@@ -7,7 +7,7 @@ angular.module('ccdaPlayground').factory('Submitter', function($http) {
     return $http({
       method: "POST",
       data: data,
-      url: "/internal/addPatient/"+pid+"?playgroundOnly=true",
+      url: "/internal/addPatient/"+pid+"?noIndex=true",
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     }).success(function(){
 			cb(pid);
