@@ -72,7 +72,7 @@
       },
       kg: function(pq){
         if(pq.unit == "kg") return pq.value;
-        if(pq.unit.match(/lb/)) return 2.2*pq.value;
+        if(pq.unit.match(/lb/)) return pq.value / 2.2;
         throw "Unrecognized weight unit: " + pq.unit
       },
       any: function(pq){
