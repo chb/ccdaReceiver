@@ -75,7 +75,7 @@ Controller.entries = function(req, res, next) {
 Controller.document = function(req, res, next) {
   var p = {
     p: req.params.pid,
-    r: req.query.r || true,
+    r: req.query.r || false, // just make up a new URI for every resource (don't rectify to existing documents)
     m: req.query.m || true,
 		noIndex: req.query.noIndex || false
   },
