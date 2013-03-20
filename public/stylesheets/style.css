@@ -4,3 +4,142 @@ body {
 a {
   color: #00b7ff;
 }
+
+/* Custom Styles */
+
+.comparison h2{
+   font-size: 20px;
+   margin-top: 0px;
+}
+
+img.smartlogo {
+	float: right;
+	margin-top: -0.4em;
+}
+
+body {
+   padding-top: 60px;
+   overflow-y: scroll;
+}
+
+.controls {
+   margin-bottom: 1em;
+}
+#pasteHere {
+   width: 100%
+}
+
+.scoreOneline {
+   width: 90%;
+}
+
+.scorePoints {
+   width: 10%;
+   font-weight: bold;
+}
+
+.rubricDetail{}
+.comparison {margin-bottom: 0.5em;}
+.grade {margin-right: 10px;}
+
+.headerTable {
+   display: inline-block; margin-bottom: 0.2em;
+}
+
+.scoreTable  td.scoreOneline, .scoreTable td.scorePoints {
+   cursor: pointer;
+}
+.pointer{
+   cursor: pointer;
+   float: right;
+   font-size: 14px;
+}
+
+.tweetButton{
+  float: left;
+  margin-top: -.25em;
+}
+.pointer:last-child{
+   margin-left: 1em;
+}
+
+.spaceRight{
+   margin-right: 1em;
+}
+
+.fadedIn {
+   opacity: 1;
+}
+
+.fadedOut {
+   opacity: 0;
+}
+.detailRow{
+   padding-bottom: 1.5em;
+}
+
+table h2 {margin-bottom: 0em;}
+
+.histogram {
+   float: right;
+   text-align: center;
+   font-style: italic;
+}
+
+
+.chart rect {
+   fill: lightslategrey;
+   shape-rendering: crispEdges;
+   stroke: white;
+}
+.chart line {
+   stroke: steelblue;
+}
+
+.chart text {
+   color: blueblack;
+   font-size: 8pt;
+}
+
+#overall{
+  vertical-align: middle;
+  margin-right: .5em;
+  font-family: 'Domine', serif;
+  font-weight: 400;
+  font-size: 4em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  float: left;
+}
+
+#overall strong{
+  font-weight: 700;
+}
+
+#shareDocument {
+  margin-top: -3em;
+  margin-bottom: .7em;
+}
+
+#collapseButtons {
+  margin-bottom: 2em;
+}
+
+#collapseButtons  a {
+  float: left;
+  margin-right: .25em;
+}
+
+.hero-unit.beautiful, .well.helpSmart {
+  background: white;
+  margin-top: 5em;
+}
+
+.bestPractice {
+  margin-bottom: 2em;
+}
+
+#launcher {
+width: 100%;
+border: 1px solid black;
+}

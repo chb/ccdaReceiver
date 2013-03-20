@@ -76,7 +76,8 @@ Controller.document = function(req, res, next) {
   var p = {
     p: req.params.pid,
     r: req.query.r || true,
-    m: req.query.m || true
+    m: req.query.m || true,
+		noIndex: req.query.noIndex || false
   },
   lxml = require("libxmljs"),
   xml = lxml.parseXmlString(req.rawBody);
@@ -119,11 +120,7 @@ Controller.searchByTokens = function(req, res, next) {
   var limit = parseInt(req.query.limit) || 10;
   var skip = parseInt(req.query.skip) || 0;
 
-  if (q.length === 0){
-    return res.json("[]");
-  }
-
-  var clauses = [];
+  var clauses = [{"noIndex": {$exists: false} }];
   var match = {"$and": clauses};
 
   q.forEach(function(t){

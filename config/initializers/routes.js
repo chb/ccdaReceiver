@@ -5,6 +5,7 @@ var app = config.app;
 var App = require('../../app/controllers/app_controller');
 var Auth = require('../../app/controllers/auth_controller');
 var CCDA = require('../../app/controllers/ccda_receiver_controller');
+var Playground = require('../../app/controllers/playground_controller');
 var ABBI = require('../../app/controllers/abbi_controller');
 var Patient = require('../../app/controllers/patient_controller');
 
@@ -24,6 +25,12 @@ app.all('/ui*',
   Auth.needLogin('ccda_receiver/login'), 
   Auth.needProvider('ccda_receiver/login'), 
   CCDA.main
+);
+
+app.all('/playground*', 
+  Auth.needLogin(passport.authenticate('playground')), 
+  Auth.needProvider(), 
+  Playground.main
 );
 
 app.all('/abbi*', 

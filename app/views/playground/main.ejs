@@ -1,0 +1,10 @@
+<% include ../ccda_receiver/partials/top.html %>
+<% include ../ccda_receiver/partials/authenticated-nav.html %>
+<% include ../partials/smartBox.html %>
+<script src="/static/ccdaPlayground/modules.js"></script>
+<script src="/static/ccdaPlayground/controllers.js"></script>
+<div ng-app="ccdaPlayground" ng-controller="MainController" >
+  <div ng-view>
+  </div>
+</div>
+<% include ../ccda_receiver/partials/bottom.html %>

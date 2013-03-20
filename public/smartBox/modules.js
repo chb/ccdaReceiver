@@ -1,4 +1,2 @@
-angular.module('smartBox', [], function($routeProvider, $locationProvider){
-});
-
+angular.module('smartBox', [], function($routeProvider, $locationProvider) {});
 

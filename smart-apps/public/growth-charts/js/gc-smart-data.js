@@ -186,41 +186,25 @@ window.GC = window.GC || {};
 		return dfd.promise();
 	};
 
-    var unit = {
-      cm: function(pq){
-        if(pq.unit == "cm") return pq.value;
-        if(pq.unit == "m") return 100*pq.value;
-        throw "Unrecognized length unit: " + pq.unit
-      },
-      kg: function(pq){
-        if(pq.unit == "kg") return pq.value;
-        if(pq.unit.match(/lb/)) return 2.2*pq.value;
-        throw "Unrecognized weight unit: " + pq.unit
-      },
-      any: function(pq){
-        return pq.value
-      }
-    };
-
     var vitalMap = {
       "statureData": {
-        unit: unit.cm,
+        unit: SMART.unit.cm,
         loinc: ["8302-2"]
       },
       "lengthData": {
-        unit: unit.cm,
+        unit: SMART.unit.cm,
         loinc: ["8306-3"]
       },
       "weightData": {
-        unit: unit.kg,
+        unit: SMART.unit.kg,
         loinc: ["3141-9"]
       },
       "headCData": {
-        unit: unit.cm,
+        unit: SMART.unit.cm,
         loinc: ["8287-5"]
       },
       "BMIData": {
-        unit: unit.any,
+        unit: SMART.unit.any,
         loinc: ["39156-5"]
       }
     };

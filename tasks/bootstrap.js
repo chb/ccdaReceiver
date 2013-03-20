@@ -24,6 +24,12 @@ config.dbstate.on("ready", function(){
           "patient"
         ]
       }, cb);
+      add_user({
+        "_id": "playground-user@smartplatforms.org", 
+        "roles": [
+          "provider"
+        ]
+      }, cb);
     },    
     function(cb){
       var add_app = require("./add_app");
@@ -35,6 +41,7 @@ config.dbstate.on("ready", function(){
       ], cb);
     }
   ], function(err){
+		console.log("Did all the things", err);
     if(err) throw err;
     db.shutdown();
   });

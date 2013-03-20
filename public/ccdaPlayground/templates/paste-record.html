@@ -1,0 +1,48 @@
+<div class="hero-unit beautiful">
+  <h1>
+    <img class="smartlogo" src="/static/images/smart-logo.png"></img>
+    Apps.  On Your C-CDA.</h1>
+</div>
+
+<!-- Example row of columns -->
+<div class="row">
+  <div class="span12 controls">
+
+    <h2>Paste and go.</h2>
+
+    <textarea AUTOFOCUS 
+      id="pasteHere" 
+      ng-model="submission" 
+      placeholder="Your C-CDA here.  (No protected health information.  Submissions logged.)"></textarea><br>
+
+    <button 
+      ng-click="runApps()"
+      ng-disabled="submission.length == 0" 
+      id="runApps" 
+      class="btn">
+      Run apps run!
+    </button>
+
+    <a href="/ui" target="_new" class="btn"> Show me an example.</a>
+
+    <span ng-show="loading" id='loading'>loading...</span><br>
+
+  </div>
+</div>
+<div ng-controller="PatientViewController" ng-show="submitted">
+  <h1 class="pull-right"><div class="step-bubble"><span>2</span></div>App time <small>for {{patientHelper.name(patient)}}</small></h1>
+  <br style="clear: both;" />
+  <div class="row-fluid">
+    <ul class="thumbnails">
+      <li class="span3" ng-repeat="app in all_apps">
+        <div class="thumbnail">
+          <img ng-src="{{app.icon}}"><!--"/ui/authorize/bp-centiles?patient=123"--> 
+          <div class="caption">
+            <a ng-href="/auth/provider/launch-app?response_type=token&client_id={{app._id}}&scope=patient&patient={{patientHelper.id(patient)}}" target="_blank" class="btn btn-block btn-primary">{{app.name}}</a>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+

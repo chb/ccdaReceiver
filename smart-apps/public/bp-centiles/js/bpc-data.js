@@ -81,10 +81,10 @@ if (!BPC) {
 
       $vitals.byCode({code:"8302-2", systemName:"LOINC"})
         .forEach(function(height){
-          if (height.physicalQuantity.unit !== "m") {throw "unknown units" + height;}
+					var cm = SMART.unit.cm(height.physicalQuantity);
           vitals.heightData.push({
             vital_date: height.measuredAt.point,
-            height: height.physicalQuantity.value
+            height: cm
           }); 
         });
       vitals_organizers.forEach(function(o){

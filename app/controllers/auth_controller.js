@@ -12,6 +12,9 @@ var Controller =  module.exports = {};
 Controller.needLogin = function(view){
   return function(req, res, next){
     if (!req.user) {
+			if (typeof view === "function"){
+				return view(req, res, next);
+			}
       return res.render(view);
     }
     next();
@@ -20,6 +23,7 @@ Controller.needLogin = function(view){
 
 Controller.browseridresponse = function(req, res, next) {
   winston.info("did bid auth" + JSON.stringify(req.user));
+	req.session.nonPassportLogin = false;
   res.json(JSON.stringify(req.user));
 };
 

@@ -55,6 +55,9 @@ angular.module('smartBox').factory('patient', function() {
     },
     name: function(p){
       var ret = "";
+			if (!p) {
+				return ret;
+			}
       if(p.name && p.name.givens) {
         ret += p.name.givens.join(" ");
       }

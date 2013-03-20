@@ -24,9 +24,24 @@
 <script src="https://browserid.org/include.js" type="text/javascript"></script>
 <script>
   $(function(){
+    var nonPassportLogin = <%= typeof nonPassportLogin === "undefined" ? false : nonPassportLogin %>;
+    var loggedInUser = null;
+    var uid = <%= typeof user !== 'undefined' ? "'"+user._id+"'": 'false' %>;
+    
+    if (uid && !nonPassportLogin){
+    	loggedInUser = uid;
+    }
+ 
+    function logout(){
+          window.location="/logout";
+    };
 
     $("#sign-out").click(function() {
-      navigator.id.logout();
+	if (nonPassportLogin) {
+	  logout();
+	} else {
+          navigator.id.logout();
+	}
     }); 
 
     $("#fake-sign-in").click(function() {
@@ -39,12 +54,9 @@
     $("#sign-in").click(function() {
       navigator.id.request({siteName: 'SMART CCDA Receiver'});
     }); 
+
     navigator.id && navigator.id.watch({
-      loggedInUser: <% if (typeof user !== 'undefined') { %> 
-        '<%=user._id%>' 
-        <% } else { %>
-        null 
-        <% } %>,
+      loggedInUser: loggedInUser,
       onlogin: function(assertion) {
         $.post("/auth/browserid", {assertion: assertion})
         .success(function(r){
@@ -52,8 +64,7 @@
         }); 
       },
       onlogout: function() {
-        console.log("onlogout called");
-        window.location="/logout";
+	logout();
       }
     });
   });

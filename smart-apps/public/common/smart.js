@@ -62,5 +62,23 @@
   if (SMART.debug !== true) {
     window.location.hash="";
   }
+  SMART.unit = {
+      cm: function(pq){
+        if(pq.unit == "cm") return pq.value;
+        if(pq.unit == "m") return 100*pq.value;
+        if(pq.unit == "[in_us]") return 2.54*pq.value;
+        if(pq.unit == "[in_i]") return 2.54*pq.value;
+        throw "Unrecognized length unit: " + pq.unit
+      },
+      kg: function(pq){
+        if(pq.unit == "kg") return pq.value;
+        if(pq.unit.match(/lb/)) return 2.2*pq.value;
+        throw "Unrecognized weight unit: " + pq.unit
+      },
+      any: function(pq){
+        return pq.value
+      }
+    };
+
 
 }(window));
