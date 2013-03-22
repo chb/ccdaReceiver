@@ -1,14 +1,14 @@
-Exploratory mapping of Consolidated CDA data to JSON, with a goal of preserving
-CCDA's data model (but applying friendly names to properties whenever possible).
+Consume **Consolidated CDA** documents and expose a JSON REST API on top.
 
-Inspired by popHealth's approach to mapping C32 (+ more Linked Data flavor)
+* [2 Minute Guide](wiki/2-Minute-Guide)
+* [RESTful API](wiki/RESTful-API)
 
 ## For automated setup, see https://github.com/jmandel/ansible-ccda
 
 Manual Setup
 ```
-$ git clone https://github.com/chb/json_ccda
-$ cd json_ccda
+$ git clone https://github.com/chb/ccdaReceiver
+$ cd ccdaReceiver
 $ npm install
 $ cd smart-apps
 $ npm install
