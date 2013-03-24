@@ -84,7 +84,7 @@ if (!BPC) {
 					var cm = SMART.unit.cm(height.physicalQuantity);
           vitals.heightData.push({
             vital_date: height.measuredAt.point,
-            height: cm
+            height: cm / 100.0;
           }); 
         });
       vitals_organizers.forEach(function(o){

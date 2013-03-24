@@ -11,6 +11,7 @@
     "connect-powered-by": "*",
     "async": "*",
     "express": "*",
+    "ejs": "*",
     "mongodb": "*",
     "libxmljs":"*",
     "xdate":"*",
