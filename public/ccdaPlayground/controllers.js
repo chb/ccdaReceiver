@@ -30,6 +30,7 @@ angular.module('ccdaPlayground').controller("MainController",
 
 		$scope.runApps = function(){
 			$scope.loading = true;
+      $scope.errors = [];
 			$scope.submitted = false;
 			Submitter.submit($scope.submission, function(pid){
 				_pid = pid;

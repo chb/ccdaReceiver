@@ -9,7 +9,7 @@ var Playground = require('../../app/controllers/playground_controller');
 var ABBI = require('../../app/controllers/abbi_controller');
 var Patient = require('../../app/controllers/patient_controller');
 
-app.get('/', function(req,res){ res.redirect("/ui"); });
+app.get('/', function(req,res){ res.redirect("/playground"); });
 
 app.post('/auth/browserid', 
   passport.authenticate('browserid'), 
