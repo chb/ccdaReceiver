@@ -1,7 +1,7 @@
 angular.module('ccdaPlayground').factory('Submitter', function($http) {
 	var Submitter = {};
 
-	Submitter.submit = function(data, cb){
+	Submitter.submit = function(data, cb, err){
 		var pid = guid();
 		
     return $http({
@@ -11,7 +11,9 @@ angular.module('ccdaPlayground').factory('Submitter', function($http) {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     }).success(function(){
 			cb(pid);
-		});
+		}).error(function(e){
+      err(e)
+    });
 	};
   return Submitter;
 });
@@ -34,7 +36,9 @@ angular.module('ccdaPlayground').controller("MainController",
 				console.log("SEt pid", pid);
 				$scope.submitted = true;
 				$scope.loading = false;
-			});
+			}, function(err){
+        $scope.errors = [err];
+      });
 		};
 
   }

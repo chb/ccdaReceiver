@@ -79,8 +79,14 @@ Controller.document = function(req, res, next) {
     m: req.query.m || true,
 		noIndex: req.query.noIndex || false
   },
-  lxml = require("libxmljs"),
-  xml = lxml.parseXmlString(req.rawBody);
+  lxml = require("libxmljs");
+
+  try {
+    var xml = lxml.parseXmlString(req.rawBody);
+  } catch(e) {
+    var emsg = e.message.replace("\n", "") + " " + JSON.stringify(e);
+    throw emsg;
+  }
 
   ccda.import(p.p, xml, function(err, result){
     w = new CCDAWriter(result, p);
