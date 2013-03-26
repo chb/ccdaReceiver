@@ -22,6 +22,7 @@ angular.module('ccdaPlayground').controller("MainController",
   function($scope,  Submitter){
 		$scope.submitted = false;
 		$scope.loading = false;
+    $scope.submission = "";
 
 		var _pid = null;
 		$scope.patientId = function(){
