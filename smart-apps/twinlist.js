@@ -25,10 +25,15 @@ function reconcile(req, res){
   ret = {};
 
   medlists.forEach(function(ml, sid){
-    ml.medicationsPrescribed.forEach(function(m){
+    var meds = [];
+    meds.push.apply(meds, ml.medicationsPrescribed);
+    meds.push.apply(meds, ml.medicationsReported);
+
+    meds.forEach(function(m){
       m.sectionId = sid;
       allmeds.push(m);
     });
+
   });
   var codes = allmeds.map(function(m){ return m.productName.code; });
 
@@ -36,7 +41,8 @@ function reconcile(req, res){
     function(err, results){
       res.setHeader("Content-type", "application/json");
       req.body.forEach(function(ml){
-        console.log(ml.medicationsPrescribed.length);
+        console.log(ml.medicationsPrescribed && ml.medicationsPrescribed.length);
+        console.log(ml.medicationsReported && ml.medicationsReported.length);
       });
       res.end(JSON.stringify(results));
     }
