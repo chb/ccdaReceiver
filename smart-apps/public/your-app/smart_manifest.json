@@ -1,0 +1,12 @@
+{
+  "_id": "your-app",
+  "oauthClientType": "public",
+  "name" : "Your App",
+  "description" : "Developer tool!  Run a server at http://localhost:8000/smartapp/index.html to try out the C-CDA Receiver",
+  "author" : "Josh Mandel",
+  "version" : ".1a",
+  "mode" : "ui",
+  "scope" : "patient",
+  "index" :  "http://localhost:8000/smartapp/index.html",
+  "icon" :  "{{app-root}}/your-app/icon.png"
+}

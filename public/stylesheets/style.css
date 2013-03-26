@@ -143,3 +143,15 @@ table h2 {margin-bottom: 0em;}
 width: 100%;
 border: 1px solid black;
 }
+
+ul.thumbnails li.span4:nth-child(3n + 4) {
+  margin-left : 0px;
+}
+
+ul.thumbnails li.span3:nth-child(4n + 5) {
+  margin-left : 0px;
+}
+
+ul.thumbnails li.span12 + li {
+  margin-left : 0px;
+}

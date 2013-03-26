@@ -38,6 +38,7 @@ config.dbstate.on("ready", function(){
         __dirname + "/../smart-apps/public/growth-charts/smart_manifest.json",
         __dirname + "/../smart-apps/public/cardiac-risk/smart_manifest.json",
         __dirname + "/../smart-apps/public/twinlist/smart_manifest.json"
+        __dirname + "/../smart-apps/public/your-app/smart_manifest.json"
       ], cb);
     }
   ], function(err){
