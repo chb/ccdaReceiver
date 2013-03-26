@@ -184,7 +184,7 @@
 	}
 	
 	function createRecord() {
-		var agemos = patient.DOB.diffMonths(new Date());
+		var agemos = ((new Date()).getTime() - patient.DOB.getTime()) / GC.Constants.TIME.MONTH;
 		
 		// If for some reason there is data entered in the future, then instead 
 		// of using today's date for adding, use the last date plus 10% increase
@@ -272,8 +272,8 @@
 		// annotation
 		var annotation = root.find('[name="annotation-content"]').val();
 		if (annotation) {
-			record.annotation = $.extend({}, record.annotation, { txt : annotation });
-		} if ( record.hasOwnProperty("annotation") ) {
+			record.annotation = { txt : annotation };
+		} else if ( record.hasOwnProperty("annotation") ) {
 			delete record.annotation;
 		}
 	}
@@ -342,7 +342,9 @@
 			inputBMI        = root.find('[name="bmi"]'),
 			inputBoneage    = root.find('[name="boneage"]'),
 			inputAnnotation = root.find('[name="annotation-content"]'),
-			date            = patient.DOB.clone().addMonths(state.agemos).toDate();
+			date            = patient.DOB.clone().toDate();
+		
+		date.setTime(date.getTime() + state.agemos * GC.Constants.TIME.MONTH);
 		
 		inputAgemos.datepicker("setDate", date);
 		
@@ -416,13 +418,18 @@
 			separator : " "
 		}));
 		
-		inputAgemos.closest(".input-wrap").toggleClass("today", Math.abs(new Date() - date) < GC.Constants.TIME.DAY);
+		inputAgemos.closest(".input-wrap").toggleClass(
+			"today", 
+			(new XDate(inputAgemos.datepicker("getDate"))).toString("ddMMMyyyy") == (new XDate()).toString("ddMMMyyyy")
+		);
 	}
 	
 	function save() {
 		if (mode == "add") {
 			patient.getModel().push(record);
+			$("html").trigger("changepatientdata");
 		}
+		
 		updateModel();
 		root.closest("#dialog").dialog("close");
 		//GC.App.ChartsView.selectedAgeWeeks = record.agemos * 4.348214285714286;
@@ -621,8 +628,8 @@
 			dateFormat: GC.Util.cDateFormatToJqFormat(GC.chartSettings.dateFormat), //"dd/mm/y",
 			minDate : patient.DOB.toDate()
 		}).change(function() {
-			var date    = $(this).datepicker("getDate")
-				agemos  = patient.DOB.diffMonths(date),
+			var date    = $(this).datepicker("getDate"),
+				agemos  = patient.DOB.diffMonths(date.getTime()),
 				ageDays = Math.round(agemos * GC.Constants.TIME_INTERVAL.DAYS_IN_MONTH),
 				other   = patient.getLastModelEntry(function(rec) {
 					return Math.round(rec.agemos * GC.Constants.TIME_INTERVAL.DAYS_IN_MONTH) === ageDays;
@@ -643,7 +650,10 @@
 				bmiChart.draw();
 				boneAgeChart.draw();
 				
-				$(this).closest(".input-wrap").toggleClass("today", Math.abs(new Date() - date) < GC.Constants.TIME.DAY);
+				$(this).closest(".input-wrap").toggleClass(
+					"today", 
+					(new XDate()).toString("ddMMMyyyy") == (new XDate(date)).toString("ddMMMyyyy")
+				);
 			}
 		});
 		

@@ -69,7 +69,7 @@
 	</p>
 </div>
 <script>
-(function($) {
+(function($, GC) {
 	
 	var root     = $("#birth-selector"),
 		list     = root.find("#patients-list"),
@@ -121,5 +121,5 @@
 		}
 	});
 	
-})(jQuery);
+})(jQuery, window.GC);
 </script>

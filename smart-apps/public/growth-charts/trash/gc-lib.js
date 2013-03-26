@@ -265,12 +265,12 @@ Chart.prototype = {
 	
 	_scaleX : function(n, min, max) 
 	{
-		return scale (n, min, max, this.x, this.x + this.width);
+		return GC.Util.scale (n, min, max, this.x, this.x + this.width);
 	},
 	
 	_scaleY : function(n, min, max) 
 	{
-		return scale (
+		return GC.Util.scale (
 			n, 
 			min, 
 			max, 
@@ -304,11 +304,11 @@ Chart.prototype = {
 		if ( !this._cache.curves[dataSet] ) {
 			this._cache.curves[dataSet] = [];
 			
-			var curvesData = getCurvesData( dataSet ),
+			var curvesData = GC.Util.getCurvesData( dataSet ),
 				maxX       = GC.App.getEndAgeMos(),
 				minX       = GC.App.getStartAgeMos();
 			
-			curvesData = cropCurvesDataX( curvesData, minX, maxX );
+			curvesData = GC.Util.cropCurvesDataX( curvesData, minX, maxX );
 			
 			var len = curvesData.length, dataLen, i, j, minY, maxY, out;
 			
@@ -346,8 +346,8 @@ Chart.prototype = {
 	
 	getValueAtX : function(x)
 	{
-		var data     = //cropCurvesDataX(
-				getCurvesData( this.dataSet ),
+		var data     = //GC.Util.cropCurvesDataX(
+				GC.Util.getCurvesData( this.dataSet ),
 				//GC.App.getStartAgeMos(),
 				//GC.App.getEndAgeMos()
 			//),
@@ -388,9 +388,9 @@ Chart.prototype = {
 				}
 			}
 			
-			val = getYatX(x, before.x, before.y, after.x, after.y);
+			val = GC.Util.getYatX(x, before.x, before.y, after.x, after.y);
 			if ( !isNaN( val ) && isFinite( val ) ) {
-				out[i] = getYatX(x, before.x, before.y, after.x, after.y);
+				out[i] = GC.Util.getYatX(x, before.x, before.y, after.x, after.y);
 			}
 		}
 		return out;
@@ -500,7 +500,7 @@ Chart.prototype = {
 				// it's right side (if it goes beyond that X coordinate)
 				var x2= this.x + this.width - s.rightAxisInnerShadow.width;
 				if ( _x > x2 ) { 
-					_y = getYatX( x2, x, y, _x, _y );
+					_y = GC.Util.getYatX( x2, x, y, _x, _y );
 					_x = x2;
 				}
 				
@@ -837,7 +837,7 @@ Chart.prototype = {
 			x, y, lastX, lastY, i, sNow, n = 0, elem, point = 0;
 		
 		
-		points = cropPatientDataX( 
+		points = GC.Util.cropPatientDataX( 
 			points, 
 			minX, 
 			maxX - GC.chartSettings.rightAxisInnerShadow.width / this.pane.month2pixel(),

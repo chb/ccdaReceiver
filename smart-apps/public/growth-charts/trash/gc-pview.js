@@ -1,6 +1,6 @@
 // Percentiles - N/A
 
-/*global $, Chart, GC, PointSet, strPad, weeks2months, Raphael, prompt*/
+/*global $, Chart, GC, PointSet, Raphael, prompt*/
 /*jslint eqeq: true, nomen: true, plusplus: true */
 (function () {
 	"use strict";
@@ -9,7 +9,11 @@
 		PATIENT,
 		Paper,
 		PaperPredictedHeight,
-		Latest;
+		Latest,
+		
+		GREY        = "#CCC",
+		GREY_LIGHT  = "#DDD",
+		GREY_DARK   = "#999";
 		
 	window.GC = window.GC || {};
 	
@@ -381,14 +385,10 @@
 	}
 
 	//function that draws the boxes of the predicted height graphic
-	function drawPredictedHeightBoxes(totalWidth, color, color2, Paper) {
-		var positionX = 0,
-			scale = GC.PredictedHeightScale,
-			maxHeight = GC.MaxHeight,
+	function drawPredictedHeightBoxes() {
+		var scale = GC.PredictedHeightScale,
 			numberOfBoxes = GC.numberOfBoxes,
-			width = totalWidth / 3,
-			lightColor = GC.Util.mixColors(color, "#FFF"),
-			darkColor = GC.Util.darken(color),
+			width = PaperPredictedHeight.width / 3,
 			i, y, h;
 		
 		for (i = 0; i < numberOfBoxes; i++) {
@@ -396,31 +396,30 @@
 			y = i * scale * GC.BoxHeightInCenitmeters;
 			h = GC.BoxHeightInCenitmeters * scale;
 			
-			Paper.rect(positionX, y, width, h).attr({
-				fill  : lightColor, 
+			PaperPredictedHeight.rect(0, y, width, h).attr({
+				fill  : GREY_LIGHT, 
 				stroke: 'white'
 			}).addClass("crispedges").toBack();
 			
-			Paper.rect(positionX + width, y, width, h).attr({
-				fill: color, 
-				stroke: lightColor
+			PaperPredictedHeight.rect(width, y, width, h).attr({
+				fill: GREY, 
+				stroke: GREY_LIGHT
 			}).addClass("crispedges").toBack();
 			
-			Paper.rect(positionX + 2 * width, y, width, h).attr({
-				fill: lightColor, 
+			PaperPredictedHeight.rect(2 * width, y, width, h).attr({
+				fill: GREY_LIGHT, 
 				stroke: 'white'
 			}).addClass("crispedges");
 		}
 	}
 	
-	function drawPredictedHeightLabels(totalWidth, color, color2, Paper) {
-		var positionX = 0,
-			scale = GC.PredictedHeightScale,
+	function drawPredictedHeightLabels() {
+		var scale = GC.PredictedHeightScale,
 			maxHeight = GC.MaxHeight,
 			numberOfBoxes = GC.numberOfBoxes,
-			width = totalWidth / 3,
-			lightColor = GC.Util.darken(color, 0.7),
-			darkColor = GC.Util.darken(color, 0.5),
+			width = PaperPredictedHeight.width / 3,
+			lightColor = GC.Util.darken(GREY_LIGHT, 0.5),
+			darkColor = GC.Util.darken(GREY, 0.5),
 			i, y, h, val;
 		
 		for (i = 0; i < numberOfBoxes; i++) {
@@ -430,8 +429,8 @@
 			val = maxHeight - GC.BoxHeightInCenitmeters * i;
 			
 			if (i % 2 === 0) {
-				Paper.text(
-					positionX + width - 4, 
+				PaperPredictedHeight.text(
+					width - 4, 
 					GC.BoxHeightInCenitmeters + y + 1.5, 
 					val
 				).attr({
@@ -440,8 +439,8 @@
 					"font-size" : 11
 				});
 				
-				Paper.text(
-					positionX + width * 2 + 4, 
+				PaperPredictedHeight.text(
+					width * 2 + 4, 
 					GC.BoxHeightInCenitmeters + y + 1.5, 
 					val
 				).attr({
@@ -450,8 +449,8 @@
 					"font-size" : 11
 				});
 			} else {
-				Paper.text(
-					positionX + width + 4, 
+				PaperPredictedHeight.text(
+					width + 4, 
 					GC.BoxHeightInCenitmeters + y + 1.5, 
 					GC.Util.cmToUS(val, "'", "''")
 				).attr({
@@ -472,40 +471,30 @@
 		}
 	}
 	
-	function getHeightImage(type, callback) {
+	function getHeightImage(callback) {
 		var base  = "img/pview/" + (PATIENT.gender == "male" ? "blue" : "pink"),
-			years,
-			img = new Image();
+			years = PATIENT.getCurrentAge().getYears(),
+			img   = new Image();
 		
 		img.onload = callback;
 		
-		if (type == "mother") {
-			img.src = base + "MotherHeightImage.png";
+		if (years <= GC.AgeRanges.Infant) {
+			img.src = base + "BabyHeightImage.png";
+		} 
+		
+		else if (years > GC.AgeRanges.Infant && years <= GC.AgeRanges.Toddler) {
+			img.src = base + "ToddlerHeightImage.png";
 		}
 		
-		else if (type == "father") {
-			img.src = base + "FatherHeightImage.png";
+		else if (years > GC.AgeRanges.Toddler && years <= GC.AgeRanges.Child) {
+			img.src = base + "ChildHeightImage.png";
 		}
 		
-		else if (type == "child") {
-			years = PATIENT.getCurrentAge().getYears();
-			
-			if (years <= GC.AgeRanges.Infant) {
-				img.src = base + "BabyHeightImage.png";
-			} 
-			
-			else if (years > GC.AgeRanges.Infant && years <= GC.AgeRanges.Toddler) {
-				img.src = base + "ToddlerHeightImage.png";
-			}
-			
-			else if (years > GC.AgeRanges.Toddler && years <= GC.AgeRanges.Child) {
-				img.src = base + "ChildHeightImage.png";
-			}
-			
-			else if (years > GC.AgeRanges.Child) {
-				img.src = base + "TeenHeightImage.png";
-			}
+		else if (years > GC.AgeRanges.Child) {
+			img.src = base + "TeenHeightImage.png";
 		}
+		
+		return img;
 	}
 	
 	//GC.getHeightImage = getHeightImage;
@@ -514,7 +503,6 @@
 	function predictedHeight(Paper, name, totalWidth, heightMother, heightFather, heightChild) {
 		var numberOfBoxes = GC.numberOfBoxes,
 			scale = GC.PredictedHeightScale,
-			positionX = 0,
 			positionY = 0,
 			width = totalWidth / 3,
 			maxHeight = GC.MaxHeight,
@@ -522,8 +510,8 @@
 			bottom = numberOfBoxes * GC.BoxHeightInCenitmeters * scale + positionY,
 			tempPositionY = positionY,
 			animationTime = checkIfToAnimate(),
-			color = setColorAccordingToGender(), 
-			color2 = GC.Util.readableColor(color, 0.2, 0.2), //Makes the second color, which is supposed to be for the text visible
+			color  = GREY, 
+			color2 = GREY_DARK, //Makes the second color, which is supposed to be for the text visible
 			i,
 			heightPredicted  = midParentalHeight(heightMother, heightFather),
 			ParentsAnimation = Raphael.animation({opacity: 0.3}, animationTime),
@@ -539,72 +527,64 @@
 			heightChildScaled  = (heightChild  / 5 - 1) * 5 * scale - 20;
 		
 		
-		drawPredictedHeightBoxes(totalWidth, color, color2, Paper);
+		drawPredictedHeightBoxes();
 		
-		//getHeightImage("mother", function() {
-		//	//this.height = heightMotherScaled;console.log(Paper)
-		//	MotherHeightImage.attr({
-		//		src : this.src,
-		//		x : positionX + 0.3  * width, 
-		//		y : bottom - (heightMother / 5 - 1) * 5 * scale + 10, 
-		//		width : width * heightMother / Paper.height, 
-		//		height : heightMotherScaled
-		//	});
-		//});
-		//Here the correct images is put according to age and gender
-		if (GC.App.getPatient().gender === 'male') {
-			MotherHeightImage = Paper.image("img/pview/blueMotherHeightImage.png"   , positionX + 0.3  * width, bottom - (heightMother / 5 - 1) * 5 * scale + 10, 80 , heightMotherScaled);
-			FatherHeightImage = Paper.image("img/pview/blueFatherHeightImage.png"   , positionX + 2.3  * width, bottom - (heightFather / 5 - 1) * 5 * scale + 10, 80 , heightFatherScaled);
-			if (ageYears <= GC.AgeRanges.Infant) {
-				BabyHeightImage = Paper.image("img/pview/blueBabyHeightImage.png"   , positionX + 1.3  * width, bottom - (heightChild  / 5 - 1) * 5 * scale + 10, 56 , heightChildScaled);
-			} else if (ageYears > GC.AgeRanges.Infant && ageYears <= GC.AgeRanges.Toddler) {
-				BabyHeightImage = Paper.image("img/pview/blueToddlerHeightImage.png", positionX + 1.3  * width, bottom - (heightChild  / 5 - 1) * 5 * scale + 10, 70 , heightChildScaled);
-			} else if (ageYears > GC.AgeRanges.Toddler && ageYears <= GC.AgeRanges.Child) {
-				BabyHeightImage = Paper.image("img/pview/blueChildHeightImage.png"  , positionX + 1.3  * width, bottom - (heightChild  / 5 - 1) * 5 * scale + 10, 90 , heightChildScaled);
-			} else if (ageYears > GC.AgeRanges.Child) {
-				BabyHeightImage = Paper.image("img/pview/blueTeenHeightImage.png"   , positionX + 1.18 * width, bottom - (heightChild  / 5 - 1) * 5 * scale + 10, 100, heightChildScaled);
-			}
-		} else if (GC.App.getPatient().gender === 'female') {
-			MotherHeightImage = Paper.image("img/pview/pinkMotherHeightImage.png"   , positionX + 0.3  * width, bottom - (heightMother / 5 - 1) * 5 * scale + 10, 80 , heightMotherScaled);
-			FatherHeightImage = Paper.image("img/pview/pinkFatherHeightImage.png"   , positionX + 2.3  * width, bottom - (heightFather / 5 - 1) * 5 * scale + 10, 80 , heightFatherScaled);
-			if (ageYears <= GC.AgeRanges.Infant) {
-				BabyHeightImage = Paper.image("img/pview/pinkBabyHeightImage.png"   , positionX + 1.3  * width, bottom - (heightChild  / 5 - 1) * 5 * scale + 10, 56 , heightChildScaled);
-			} else if (ageYears > GC.AgeRanges.Infant && ageYears <= GC.AgeRanges.Toddler) {
-				BabyHeightImage = Paper.image("img/pview/pinkToddlerHeightImage.png", positionX + 1.3  * width, bottom - (heightChild  / 5 - 1) * 5 * scale + 10, 70 , heightChildScaled);
-			} else if (ageYears > GC.AgeRanges.Toddler && ageYears <= GC.AgeRanges.Child) {
-				BabyHeightImage = Paper.image("img/pview/pinkChildHeightImage.png"  , positionX + 1.2  * width, bottom - (heightChild  / 5 - 1) * 5 * scale + 10, 90 , heightChildScaled);
-			} else if (ageYears > GC.AgeRanges.Child) {
-				BabyHeightImage = Paper.image("img/pview/pinkTeenHeightImage.png"   , positionX + 1.18 * width, bottom - (heightChild  / 5 - 1) * 5 * scale + 10, 100, heightChildScaled);
-			}
-		}
-		//MotherHeightImage.attr("opacity", 0.0);
-		//FatherHeightImage.attr("opacity", 0.0);
+		BabyHeightImage = Paper.image();
+		getHeightImage(function() {
+			//console.log(this.width, this.height);
+			
+			var heightAvail = PaperPredictedHeight.height - 22,
+				height      = heightChild * (heightAvail / 210) - 20,
+				top         = heightAvail - height + 10,
+				newWidth    = this.width * height / this.height;
+			
+			BabyHeightImage.attr({
+				src 	: this.src,
+				x 		: 1.5  * width - newWidth / 2, 
+				y 		: top, 
+				width 	: newWidth, 
+				height 	: height
+			});
+		});
 		
-		MotherHeightImage.animate(ParentsAnimation);
-		FatherHeightImage.animate(ParentsAnimation);
+		MotherHeightImage = Paper.image(
+			"img/pview/motherHeightImage.png", 
+			0.3  * width, 
+			bottom - (heightMother / 5 - 1) * 5 * scale + 10, 
+			80 , 
+			heightMotherScaled
+		).attr("opacity", 0).animate(ParentsAnimation);
+		
+		FatherHeightImage = Paper.image(
+			"img/pview/fatherHeightImage.png", 
+			2.3  * width, 
+			bottom - (heightFather / 5 - 1) * 5 * scale + 10, 
+			80 , 
+			heightFatherScaled
+		).attr("opacity", 0).animate(ParentsAnimation);
 		
 		//Variables the moving parts of the graphic are initialized
 		
-		var MotherHeightLine = Paper.rect(positionX + 1, bottom - 1,  width - 2, 2),
+		var MotherHeightLine = Paper.rect(1, bottom - 1,  width - 2, 2),
 			AnimateMotherLine = Raphael.animation({ y: bottom - (heightMother / 5 - 1) * 5 * scale - 1 }, animationTime),
 			
-			ChildHeightLine = Paper.rect(positionX + width + 1, bottom - 1, width - 2, 2),
+			ChildHeightLine = Paper.rect(width + 1, bottom - 1, width - 2, 2),
 			AnimateChildLine = Raphael.animation({ y: bottom - (heightChild / 5 - 1) * 5 * scale }, animationTime),
 			
-			FatherHeightLine = Paper.rect(positionX + 2 * width + 1, bottom - 1, width - 2, 2),
+			FatherHeightLine = Paper.rect(2 * width + 1, bottom - 1, width - 2, 2),
 			AnimateFatherLine = Raphael.animation({ y: bottom - (heightFather / 5 - 1) * 5 * scale }, animationTime),
 			
-			PredictedLine = Paper.rect(positionX + width + 1, bottom - 1, width - 2, 2).attr({
+			PredictedLine = Paper.rect(width + 1, bottom - 1, width - 2, 2).attr({
 				'fill': "0-" + color + ":10-#000:50-" + color + ":90", 
 				'stroke': "none"
 			}).addClass("crispedges"),
 			AnimatePredictedLine = Raphael.animation({ y: bottom - (heightPredicted / 5 - 1) * 5 * scale - 1}, animationTime),
 			
 			ChildAnimation = Raphael.animation({opacity: 0.7}, animationTime),
-			TextMother = Paper.text(positionX + 5, bottom, GC.str("STR_132") + ": " + heightMother + "cm"),
-			TextChild = Paper.text(positionX + width + width / 2, bottom, heightChild + "cm"),
-			TextFather = Paper.text(positionX + 3 * width - 5, bottom, GC.str("STR_131") + ": " + heightFather + "cm"),
-			TextPredicted = Paper.text(positionX + width + width / 2, bottom, heightPredicted + "cm"),
+			TextMother = Paper.text(5, bottom, GC.str("STR_132") + ": " + heightMother + "cm"),
+			TextChild = Paper.text(width + width / 2, bottom, heightChild + "cm"),
+			TextFather = Paper.text(3 * width - 5, bottom, GC.str("STR_131") + ": " + heightFather + "cm"),
+			TextPredicted = Paper.text(width + width / 2, bottom, heightPredicted + "cm"),
 			AnimateMotherText = Raphael.animation({y: bottom - (heightMother / 5 - 1) * 5 * scale - 10}, animationTime),
 			AnimateChildText = Raphael.animation({y: bottom - (heightChild / 5 - 1) * 5 * scale - 10}, animationTime),
 			AnimateFatherText = Raphael.animation({y: bottom - (heightFather / 5 - 1) * 5 * scale - 10}, animationTime),
@@ -654,7 +634,7 @@
 		GC.PredictedHeight = {};
 		GC.PredictedHeight.PredictedLine = PredictedLine;
 		GC.PredictedHeight.TextPredicted = TextPredicted;
-		drawNotches(Paper, positionX, width, bottom, scale, animationTime);
+		drawNotches(Paper, 0, width, bottom, scale, animationTime);
 	}
 	
 	//This function draws 'notches' that correspond to old height measurements
@@ -718,7 +698,7 @@
 			width = getPaperWidth("Paper");
 		//Attributes
 		TextType.attr({'opacity': 0.0, 'fill': color, 'font-size': GC.pViewSettings.windowWidth / 71, 'font-weight': 'bold'});
-		TextData.attr({'opacity': 0.0, 'fill': color, 'font-size': GC.pViewSettings.windowWidth / 37})
+		TextData.attr({'opacity': 0.0, 'fill': color, 'font-size': GC.pViewSettings.windowWidth / 37});
 		Graphic.attr('opacity', 0.0);
 		//Animation
 		TextType.animate(AnimateMeasures);
@@ -814,7 +794,7 @@
 		set.push(
 			Paper.text(x, y, !value && value !== 0 ? "N/A" : value + "%").attr({	
 				"font-size" : 20, 
-				"fill"      : 'white', 
+				"fill"      : 'white'
 			})
 		);
 		

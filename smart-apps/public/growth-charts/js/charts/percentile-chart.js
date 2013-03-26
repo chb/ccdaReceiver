@@ -1,4 +1,4 @@
-/*global Chart, GC, PointSet, strPad, weeks2months, Raphael*/
+/*global Chart, GC, PointSet, Raphael*/
 /*jslint eqeq: true, nomen: true, plusplus: true */
 /**
  * Percentile Chart module extending the GC.App.Charts collection.
@@ -120,8 +120,8 @@
 				q = pcts[i];
 				y = bottom - this.height * q;
 				v = pctz == "pct" ? 
-					q * 100 + "%" :
-					Math.round(Math.normsinv(q) * 100) / 100 + "Z";
+					GC.Util.format(q * 100, { type: "percentile", precision: 0 }) :
+					GC.Util.format(Math.normsinv(q), { type: "zscore", precision: 2 });
 				
 				this._nodes.push(this.pane.paper.path("M " + this.x + " " + y + " h " + this.width).attr({ "stroke" : "#A4A8AB" }).addClass("crispedges"));
 				this._nodes.push(this.pane.paper.circle(this.x, y, 2).attr({ "stroke" : "none", "fill" : "#A4A8AB" }));
@@ -409,7 +409,7 @@
 			
 			// Calculate the new points and draw them, pushing the elements to  
 			// "this._selectionNodes" collection to make them removable later.
-			var pts  = this.getDataPointsAtMonth( weeks2months( ageWeeks ) ), 
+			var pts  = this.getDataPointsAtMonth( GC.Util.weeks2months( ageWeeks ) ), 
 				l    = pts.length, 
 				pctz = GC.App.getPCTZ(),
 				inst = this,
@@ -566,7 +566,7 @@
 						paddingY : 2,
 						paddingX : 6,
 						color    : GC.Util.readableColor( pts[i].data.color, 0.95, 0.95 ),
-						text     : strPad( pts[i].data.shortName, 3, " " ),
+						text     : GC.Util.strPad( pts[i].data.shortName, 3, " " ),
 						shiftY   : -30,
 						shadowOffsetX : -15,
 						shadowOffsetY : 5,
@@ -577,15 +577,15 @@
 					};
 					
 					if (pctz == "pct" && pts[i].data.pct !== undefined) {
-						ttSettings.text2  = GC.Util.round( pts[i].data.pct * 100 ) + " %";
+						ttSettings.text2  = GC.Util.format(pts[i].data.pct * 100, { type : "percentile" });
 						if (pts[i].data.pct2) {
-							ttSettings.text3 = GC.Util.round( pts[i].data.pct2 * 100 ) + " %";
+							ttSettings.text3 = GC.Util.format(pts[i].data.pct2 * 100, { type : "percentile" });
 						}
 					}
 					else if (pctz == "z" && pts[i].data.z !== undefined) {
-						ttSettings.text2  = GC.Util.roundToPrecision(pts[i].data.z, 2) + " Z";
+						ttSettings.text2 = GC.Util.format(pts[i].data.z, { type : "zscore" });
 						if (pts[i].data.z2) {
-							ttSettings.text3 = GC.Util.roundToPrecision(pts[i].data.z2, 2) + " Z";
+							ttSettings.text3 = GC.Util.format(pts[i].data.z2, { type : "zscore" });
 						}
 					}
 

@@ -1,7 +1,7 @@
-GC = window.GC || {};
+window.GC = window.GC || {};
 
-(function () {
-    "use strict";
+(function ($, GC) {
+   "use strict";
 	
 	// Preferences: app + any patient +     user
 	// Scratchpad : app +     patient + any user
@@ -22,17 +22,17 @@ GC = window.GC || {};
 	// =========================================================================
 	var readOnlySettings = {
 		
-		fileRevision : 59,
+		fileRevision : 71,
 		
 		// See the toString method for the rendering template
 		version : {
 			major    : 0,
-			minor    : 3,
-			build    : 3,
-			revision : 6,
-			state    : "alpha", // dev|alpha|beta|rc|r
+			minor    : 5,
+			build    : 1,
+			revision : 1,
+			state    : "beta", // dev|alpha|beta|rc|r
 			
-			toString : function() {
+			asString : function() {
 				return  this.major    + "." + 
 						this.minor    + "." + 
 						this.build    + "." + 
@@ -61,8 +61,10 @@ GC = window.GC || {};
 		defaultBabyChart : "WHO", // 0 - 2 years
 		defaultPrematureChart : "FENTON", // premature
 		
-		maxWidth : 1400, // For the charts paper
-		minWidth : 1095, // For the entire page
+		widthType  : "auto",
+		paperWidth : 1200,
+		maxWidth   : 1400, // For the charts paper
+		minWidth   : 1095, // For the entire page
 		
 		// The aspectRatio for the entire chart area "height / width".
 		// Use "0" to disable ( make it stretch to the available height, if 
@@ -108,13 +110,17 @@ GC = window.GC || {};
 		// Minimal time range to observe in millisecconds
 		minTimeInterval : GC.Constants.TIME.WEEK * 6,
 		
-		pctz : "pct", // "pct" or "z"
-		metrics : "metric", // "metric" or "eng"
+		pctz      : "pct", // "pct" or "z"
+		metrics   : "metric", // "metric" or "eng"
 		metricsPV : "eng", // Same as above, but for the parental view
+		
+		gestCorrectionTreshold : 30, // weeks 
+		gestCorrectionType : "none",
 		
 		// Timeline Settings 
 		// =====================================================================
 		timeline : {
+			
 			snapDistance : 2, // % of the current column width
 			
 			// highlight on hover and select on click...
@@ -150,15 +156,16 @@ GC = window.GC || {};
 			}
 		},
 		
+		nicu : false,
+		
 		roundPrecision : {
-			length     : { std : 2, nicu : 2 },
-			weight     : { std : 2, nicu : 2 },
-			headc      : { std : 2, nicu : 2 },
-			bmi        : { std : 2, nicu : 2 },
-			percent    : { std : 0, nicu : 1 },
+			length     : { std : 1, nicu : 3 },
+			weight     : { std : 1, nicu : 3 },
+			headc      : { std : 1, nicu : 2 },
+			bmi        : { std : 1, nicu : 2 },
 			percentile : { std : 0, nicu : 2 },
 			zscore     : { std : 2, nicu : 2 },
-			velocity   : { std : "yearly", nicu : "daily" }
+			velocity   : { std : "year", nicu : "day" }
 		},
 		
         // margins to be left around the main grid (for labels etc)
@@ -245,6 +252,22 @@ GC = window.GC || {};
 				"Primary selection"   : "#38434C",
 				"Secondary selection" : "#61737F"
 			},
+			"High Contrast" : {
+				"Length": "#0191BD",
+				"Weight": "#BD7400",
+				"Head C": "#639708",
+				"BMI"   : "#A52D2D",
+				"Primary selection"  : "#13202B",
+				"Secondary selection": "#30536A"
+			},
+			"Low Contrast" : {
+				"Length": "#5CB6D2",
+				"Weight": "#DDA750",
+				"Head C": "#97C04F",
+				"BMI"   : "#B09292",
+				"Primary selection"  : "#575757",
+				"Secondary selection": "#858585"
+			},
 			"Greyscale" : {
 				"Length" : "#888",
 				"Weight" : "#888",
@@ -252,6 +275,22 @@ GC = window.GC || {};
 				"BMI"    : "#888",
 				"Primary selection"   : "#333",
 				"Secondary selection" : "#999"
+			},
+			"Greyscale - Low Contrast" : {
+				"Length" : "#BBB",
+				"Weight" : "#BBB",
+				"Head C" : "#BBB",
+				"BMI"    : "#BBB",
+				"Primary selection"   : "#444",
+				"Secondary selection" : "#AAA"
+			},
+			"Greyscale - High Contrast" : {
+				"Length" : "#444",
+				"Weight" : "#444",
+				"Head C" : "#444",
+				"BMI"    : "#444",
+				"Primary selection"   : "#000",
+				"Secondary selection" : "#888"
 			}
 		},
 		
@@ -474,4 +513,4 @@ GC = window.GC || {};
 	);
 	GC.Scratchpad.autoCommit = true;
 	
-}());
+}(jQuery, GC));

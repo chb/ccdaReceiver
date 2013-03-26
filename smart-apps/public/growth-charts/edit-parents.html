@@ -1,0 +1,227 @@
+<style type="text/css">
+#parents-editor {
+	font-family: Tahoma, sans-serif;
+	font-size: 14px;
+}
+#parents-editor input[type="checkbox"] {
+	width: 12px;
+	margin: 0;
+	height: auto;
+	line-height: 20px;
+}
+#parents-editor input[type="text"] {
+	width: 130px;
+}
+#parents-editor .img-mother {
+	margin-right: 10px;
+}
+#parents-editor .img-father {
+	margin-left: 10px;
+}
+#parents-editor .pct {
+	display: inline-block;
+	width: 20px;
+	height: 40px;
+	line-height: 40px;
+	vertical-align: baseline;
+	padding: 0;
+	margin: 1px 0 0;
+	color: #888;
+}
+#parents-editor .col-left {
+	text-align: left;
+	vertical-align: bottom;
+}
+#parents-editor .col-right {
+	text-align: right;
+	vertical-align: bottom;
+}
+#parents-editor .step-input-wrap {
+	margin: 0 !important;
+	vertical-align:top;
+}
+#parents-editor img {
+	opacity: 0.5;
+}
+#parents-editor label {
+	line-height: 20px;
+}
+</style>
+<table id="parents-editor">
+	<tr>
+		<td colspan="4">
+			Enter height data for each parent, checking box if<br />and only the 
+			parent is the biological parent
+			<br />
+			<br />
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<img src="img/pview/pinkMotherHeightImage.png" height="120" width="30" class="img-mother" />
+		</td>
+		<td class="col-left">
+			<span class="pct pct-mother"></span><br />
+			<input type="text" name="height-mother" /><br />
+			<br />
+			<label>
+				<input type="checkbox" name="bio-mother" /> Biological mother&nbsp;&nbsp;&nbsp;
+			</label>
+		</td>
+		<td class="col-right">
+			<span class="pct pct-father"></span><br />
+			<input type="text" name="height-father" /><br />
+			<br />
+			<label>
+				&nbsp;&nbsp;&nbsp;Biological father <input type="checkbox" name="bio-father" />
+			</label>
+		</td>
+		<td>
+			<img src="img/pview/blueFatherHeightImage.png" height="120" width="22" class="img-father" />
+		</td>
+	</tr>
+	<tr class="mid-height">
+		<td colspan="4">
+			<p style="text-align:left"><br /><br />Calculated mid parental height  <b>171 cm</b><br /></p>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4">
+			<br /><br />
+			<a class="button save" href="javascript:void 0;">Save</a>
+			<a class="button cancel" href="javascript:void 0;" onclick="$(this).closest('#dialog').dialog('close');">Cancel</a>
+		</td>
+	</tr>
+</table>
+<script>
+(function() {
+	var root    = $("#parents-editor");
+	var patient = GC.App.getPatient();
+	var ready   = false;
+	
+	function updateUI() {
+		if (ready) {
+			var heightMother = root.find('[name="height-mother"]').stepInput("value");
+			var heightFather = root.find('[name="height-father"]').stepInput("value");
+			var bioMother    = root.find('[name="bio-mother"]')[0].checked;
+			var bioFather    = root.find('[name="bio-father"]')[0].checked;
+			var pct;
+			
+			if (!root.find('[name="height-mother"]').val()) {
+				heightMother = null;
+			}
+			
+			if (!root.find('[name="height-father"]').val()) {
+				heightFather = null;
+			}
+			
+			pct = GC.findPercentileFromX(
+				heightMother, 
+				GC.DATA_SETS.CDC_STATURE, 
+				"female", 
+				12 * 20
+			); 
+			
+			if ( heightMother && !isNaN(pct) && isFinite(pct) ) {
+				root.find(".pct-mother")
+					.text(GC.Util.format(pct * 100, { type : "percentile"}))
+					.removeAttr("Title");
+			} else {
+				root.find(".pct-mother")
+					.text("N/A")
+					.attr("title", "Not enough statistics data to calculate the percentile");
+			}
+			
+			pct = GC.findPercentileFromX(
+				heightFather, 
+				GC.DATA_SETS.CDC_STATURE, 
+				"male", 
+				12 * 20
+			); 
+			
+			if ( heightFather && !isNaN(pct) && isFinite(pct) ) {
+				root.find(".pct-father")
+					.text(GC.Util.format(pct * 100, { type : "percentile"}))
+					.removeAttr("Title");
+			} else {
+				root.find(".pct-father")
+					.text("N/A")
+					.attr("title", "Not enough statistics data to calculate the percentile");
+			}
+			
+			if (heightMother && heightFather && bioMother && bioFather) {
+				root.find(".mid-height").show().find("b").html(
+					GC.Util.format(
+						(heightFather + heightMother) / 2, 
+						{ type : "height"}
+					)
+				);
+			} else {
+				root.find(".mid-height").hide();
+			}
+		}
+	}
+	
+	root.find('[name="height-mother"]').stepInput({
+		min : 100,
+		max : 220,
+		step: 1,
+		precision : 1,
+		change : updateUI,
+		format : function( value ) {
+			return GC.Util.format(value, { type : "height" });
+		}
+	});
+	
+	if (patient.familyHistory.mother.height !== null) {
+		root.find('[name="height-mother"]').stepInput("value", patient.familyHistory.mother.height);
+	}
+	
+	root.find('[name="height-father"]').stepInput({
+		min : 100,
+		max : 220,
+		step: 1,
+		precision : 1,
+		change : updateUI,
+		format : function( value ) {
+			return GC.Util.format(value, { type : "height" });
+		}
+	});
+	
+	if (patient.familyHistory.father.height !== null) {
+		root.find('[name="height-father"]').stepInput("value", patient.familyHistory.father.height);
+	}
+	
+	root.find('[name="bio-father"]').prop("checked", !!patient.familyHistory.father.isBio).change(updateUI);
+	root.find('[name="bio-mother"]').prop("checked", !!patient.familyHistory.mother.isBio).change(updateUI);
+	
+	root.find(".button.save").click(function() {
+		var heightMother = root.find('[name="height-mother"]').stepInput("value");
+		var heightFather = root.find('[name="height-father"]').stepInput("value");
+		var bioMother    = root.find('[name="bio-mother"]')[0].checked;
+		var bioFather    = root.find('[name="bio-father"]')[0].checked;
+		
+		if (!root.find('[name="height-mother"]').val()) {
+			heightMother = null;
+		}
+		
+		if (!root.find('[name="height-father"]').val()) {
+			heightFather = null;
+		}
+		
+		patient.setFamilyHistory({
+			father : { height : heightFather, isBio : bioFather },
+			mother : { height : heightMother, isBio : bioMother }
+		});
+		
+		root.closest('#dialog').dialog('close');
+	});
+	
+	ready = true;
+	updateUI();
+	
+	root.closest("#dialog").dialog("option", {
+		position : "center"
+	});
+})();
+</script>

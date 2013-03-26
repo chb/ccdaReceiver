@@ -1,7 +1,7 @@
 /*global
- Chart, GC, PointSet, strPad, weeks2months, Raphael, console, getLineXatY, $,
- jQuery, debugLog, cropCurvesDataX, getCurvesData, getYatX, findMinMax, scale,
- sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout*/
+ Chart, GC, PointSet, Raphael, console, $,
+ jQuery, debugLog,
+ XDate, setTimeout*/
 
 /*jslint eqeq: true, nomen: true, plusplus: true, forin: true, newcap: true, 
 devel: true*/
@@ -370,7 +370,7 @@ devel: true*/
 				})
 				
 				.fail(function(e) {
-					console.log(e);
+					//console.log(e);
 					failuresCount++;
 					isLocked = false;
 					dfd.relect();

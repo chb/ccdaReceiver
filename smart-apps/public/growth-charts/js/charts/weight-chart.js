@@ -25,18 +25,15 @@
 			return GC.str("STR_6") + " (" + this.getUnits() + ")";
 		},
 		
-		setDataSource : function( src ) 
-		{
+		setDataSource : function( src ) {
 			return this._setDataSource( "primary", src, "WEIGHT" );
 		},
 
-		setProblem : function( src ) 
-		{
+		setProblem : function( src ) {
 			return this._setDataSource( "secondary", src, "WEIGHT" );
 		},
 		
-		_get_dataPoints : function()
-		{
+		_get_dataPoints : function() {
 			return Chart.prototype._get_dataPoints.call( this, "weight" );
 		}
 	});

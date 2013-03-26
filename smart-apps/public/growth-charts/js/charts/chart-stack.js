@@ -1,4 +1,4 @@
-/*global Chart, GC, PointSet, strPad, weeks2months, Raphael*/
+/*global Chart, GC, PointSet, Raphael*/
 /*jslint eqeq: true, nomen: true, plusplus: true */
 
 (function(NS, $) {

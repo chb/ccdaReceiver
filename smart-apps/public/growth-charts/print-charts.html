@@ -30,7 +30,7 @@
         <script src="js/gc-charts-data.js"></script>
         <script src="js/gc-statistics.js"></script>
         <script src="js/gc-chart.js"></script>
-        <script src="js/gc-pview.js"></script>
+        <script src="js/gc-parental-view.js"></script>
         
 		<script src="js/print2.js"></script>
 		<script src="js/chart-pane.js"></script>
@@ -43,6 +43,7 @@
 		<script src="js/charts/chart-stack.js"></script>
 		<script src="js/gc-data-model.js"></script>
 		<script src="js/gc-grid-view.js"></script>
+		<script src="js/gc-boneage-calculator.js"></script>
         
 		<script type="text/javascript">
 			var lessCfg = {
@@ -89,9 +90,27 @@
 		
 	</head>
 	<body>
-	
+	<div id="print-toolbar">
+		<a href="javascript:window.print();" class="print-link">
+		<img src="http://cdn5.iconfinder.com/data/icons/duesseldorf/16/print.png" alt="" />
+		Print Now
+		</a>
+	</div>
 	<div id="header">
-		<h1>Patient's Name</h1>
+		<h1 class="patient-name">Patient's Name</h1>
+		<label class="gender-color" data-translatecontent="STR_155"></label> <span class="patient-gender title"></span>
+		<label class="gender-color" data-translatecontent="STR_157"></label> <span class="patient-birth title"></span>
+		<label class="gender-color" data-translatecontent="STR_156"></label> <span class="patient-age title"></span>
+		<span class="weeker" style="display:none;"> 
+			<label class="gender-color">{</label>
+			<span class="value title" style="margin-right: 0"></span>
+			<label class="gender-color">}</label>&nbsp;&nbsp;
+		</span>
+		<span style="display: none;">
+			<label class="gender-color">corrected age</label>
+			<span id="corrected-age" class="title"></span>
+		</span>
+		<span id="today"></span>
 	</div>
 	<div class="frame">
 		<div id="timeline-top" class="timeline">
@@ -105,68 +124,110 @@
 			<div id="view-clinical" class="tab-panel">
 				<div class="stage-1"></div>
 			</div>
+			
+			<!-- Parental View --------------------------------------------- -->
 			<div id="view-parental" class="tab-panel">
 				<div id="pview-wrapper">
-					
-					<!-- left-column ------------------------------------------- -->
+
+					<!-- left-column -->
 					<div class="left-column">
 						<div id="PatientHeader">
-							<img id="picture" src="img/pview/PlacHholderAvatar.png" />
-							<div id = "PatientHeadertexts">
-								<div id="nameText" class="heading">NAME</div>
-								<div class="gender-color sub-heading" id="nameSubtitle">premature</div>
-							</div>
+							<img id="picture" src="img/transparent.gif" width="119" height="92" />
+							<div id="PatientHeadertexts" class="heading" data-translatecontent="STR_177">&nbsp;</div>
 						</div>
-						
+
 						<div id="PaperLeft">
-							<div id="Paper"></div>
-							<div id="infobox">
-								<div class="gender-bg" id="gender" class="Infobox">
-									<p id="genderText">Gender: </p>
-									<p id="genderData"></p>
+							<table id="vitals" border="0" cellspacing="0">
+								<tr>
+									<td class="vitals-height">
+										<img src="img/pview/LengthIcon.png" />
+										<div class="label" data-translatecontent="STR_152"></div>
+										<span class="value date"></span>
+									</td>
+									<td class="vitals-weight">
+										<img src="img/pview/WeightIcon.png" />
+										<div class="label" data-translatecontent="STR_6"></div>
+										<span class="value date"></span>
+									</td>
+									<td class="vitals-headc">
+										<img src="img/pview/HeadCircumferenceIcon.png" />
+										<div class="label" data-translatecontent="STR_13"></div>
+										<span class="value date"></span>
+									</td>
+									<td class="vitals-bmi">
+										<img src="img/pview/bmi-icon.png" />
+										<div class="label" data-translatecontent="STR_14"></div>
+										<span class="value date"></span>
+									</td>
+								</tr>
+								<tr class="second-row">
+									<td class="vitals-height">
+										<span class="value metric"></span><span class="value pct"></span>
+										<div class="value imperial"></div>
+									</td>
+									<td class="vitals-weight">
+										<span class="value metric"></span><span class="value pct"></span>
+										<div class="value imperial"></div>
+									</td>
+									<td class="vitals-headc">
+										<span class="value metric"></span><span class="value pct"></span>
+										<div class="value imperial"></div>
+									</td>
+									<td class="vitals-bmi">
+										<span class="value metric"></span><span class="value pct"></span>
+										<div class="value imperial"></div>
+									</td>	
+								</tr>
+							</table>
+							<div class="vitals-chart four-cols images">
+								<div class="fat-cell">
+									<img src="img/transparent.gif" width="120" height="229" alt="Underweight" />
 								</div>
-								<div class="gender-bg" id="age">
-									<p id="ageText">Age: </p>
-									<p id="ageData"></p>
+								<div class="fat-cell">
+									<img src="img/transparent.gif" width="120" height="229" alt="Healthy"/>
 								</div>
-								<div class="gender-bg" id="DOB">
-									<p id="DOBText">DOB: </p>
-									<p id="DOBData"></p>
+								<div class="fat-cell">
+									<img src="img/transparent.gif" width="120" height="229" alt="Overweight"/>
 								</div>
-								<div class="gender-bg" id="Gestation">
-									<p id="GestationText">Gestation: </p>
-									<p id="GestationData"></p>
-								</div>
-								<div class="gender-bg" id="Allergies">
-									<p id="AllergiesText">Allergies: </p>
-									<p id="AllergiesData"></p>
-								</div>
-								<div class="gender-bg" id="Controls">
-									<button type="button" class="gender-button" id="EditPatient">Edit Patient</button>
-									<button type="button" class="gender-button" id="AddPhoto">AddPhoto</button>
+								<div class="fat-cell">
+									<img src="img/transparent.gif" width="120" height="229" alt="Obese"/>
 								</div>
 							</div>
+							<div class="vitals-chart four-cols labels">
+								<div class="fat-cell" data-translatecontent="STR_173"></div>
+								<div class="fat-cell" data-translatecontent="STR_174"></div>
+								<div class="fat-cell" data-translatecontent="STR_175"></div>
+								<div class="fat-cell" data-translatecontent="STR_176"></div>
+							</div>
+							<div class="vitals-chart four-cols values">
+								<div class="fat-cell"></div>
+								<div class="fat-cell"></div>
+								<div class="fat-cell"></div>
+								<div class="fat-cell"></div>
+							</div>
+							<div id="vitals-message">
+								<div class="weight-status"></div>
+								<div class="weight-trend"></div>
+								<div class="weight-range"></div>
+								<div class="custom-notes" contenteditable="true"></div>
+							</div>
 						</div>
-				
+
 					</div>
-					
-					<!-- right-column ------------------------------------------ -->
+
+					<!-- right-column -->
 					<div class="right-column">
 						<div id="PredictedHeightHeader">
-							<div id="nameTextPredicted" class="heading">NAME'S HEIGHT</div>
-							<div class="gender-color sub-heading" id="predictedSubtitle">Based on Median Parent Height</div>
+							<div id="nameTextPredicted" class="heading" data-translatecontent="STR_153"></div>
 						</div>
-						
+
 						<div id="RightPaper">
 							<div id="PaperPredictedHeight"></div>
-							<div class="gender-bg" id="PredictedHeightFooter">
-								<button type="button" onclick="heightMotherEdit()" class="gender-button" id="EditMother">Edit Mother's Height</button>
-								<button type="button" onclick="heightFatherEdit()" class="gender-button" id="EditFather">Edit Father's Height</button>
-							</div>
 						</div>
 					</div>
 				</div>
 			</div>
+			
 			<div id="view-table" class="tab-panel"></div>
 		</div>
 		<div id="timeline-bottom" class="timeline">

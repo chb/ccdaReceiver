@@ -9,7 +9,7 @@ if (!GC) {
     GC = {};
 }
 
-(function () {
+(function ($) {
     "use strict";
 	
 	var FENTON_WEIGHT_DATA_ORIGINAL = [
@@ -36591,7 +36591,10 @@ if (!GC) {
               {Agemos:180.5148,value:82.0252},
               {Agemos:180.8508,value:82.0254}]}
     };
-
+	
+	BB_WEIGHT_DATA.male = {};
+	BB_STATURE_DATA.male = {};
+	
     GC.DATA_SETS = {
         "CDC_WEIGHT": {
 			"measurement" : "metric",
@@ -36797,6 +36800,10 @@ if (!GC) {
 	// Preprocess the data (sort by age, remove dublicates, etc.)
 	(function() {
 		
+		function sortByAge(a, b) {
+			return a.Agemos - b.Agemos;
+		}
+		
 		function cleanUp( data ) {
 			var len = data.length, i, prev, cur;
 			for ( i = 1; i < len; i++ ) {
@@ -36824,9 +36831,7 @@ if (!GC) {
 				
 				
 				if ( type == "[object Array]" ) {
-					ds.sort(function(a, b) {
-						return a.Agemos - b.Agemos;
-					});
+					ds.sort(sortByAge);
 					
 					//cleanUp( ds );
 					//GC.DATA_SETS[x].data[gender] = ds;
@@ -36835,9 +36840,7 @@ if (!GC) {
 					for ( key in ds ) {
 						group = ds[key];
 						
-						group.sort(function(a, b) {
-							return a.Agemos - b.Agemos;
-						});
+						group.sort(sortByAge);
 						
 						cleanUp( group );
 						GC.DATA_SETS[x].data[gender][key] = group;
@@ -36845,7 +36848,7 @@ if (!GC) {
 				}
 			}
 		}
-	})();
+	}());
 	// =========================================================================
 	
 	/**
@@ -36861,11 +36864,11 @@ if (!GC) {
 		
 		// Something like GC.DATA_SETS_MAP.CDC
 		tmp = GC.DATA_SETS_MAP[ src ];
-		if ( !tmp ) return null;
+		if ( !tmp ) {return null;}
 		
 		// Something like GC.DATA_SETS_MAP.CDC.LENGTH
 		tmp = tmp[ type ];
-		if ( !tmp ) return null;
+		if ( !tmp ) {return null;}
 		
 		// Convert to array of data sets if needed
 		if ( Object.prototype.toString.call( tmp ) != "[object Array]" ) {
@@ -36898,13 +36901,18 @@ if (!GC) {
 	 * @param {Objects} ds One of the item in GC.DATA_SETS
 	 * @returns Object like 
 	 * {
-	 * 		"male"   : { min : 0, max : 120 },
-	 * 		"female" : { min : 0, max : 100 }
+	 *     "male"   : { min : 0, max : 120 },
+	 *     "female" : { min : 0, max : 100 }
 	 * }
 	 */
 	GC.getDataSetAgeRange = function( ds ) {
 		
+		function sortByAge(a, b) {
+			return a.Agemos - b.Agemos;
+		}
+		
 		if ( !ds.ageRange ) {
+			
 			ds.ageRange = {
 				"male"   : { min : null, max : null },
 				"female" : { min : null, max : null }
@@ -36923,9 +36931,7 @@ if (!GC) {
 				// Entries are listed directly under the gender. That seems to 
 				// be the case for LMS data sets
 				if ( type == "[object Array]" ) {
-					data.sort(function(a, b) {
-						return a.Agemos - b.Agemos;
-					});
+					data.sort(sortByAge);
 					
 					len = data.length;
 					
@@ -36944,9 +36950,7 @@ if (!GC) {
 					for ( x in data ) {
 						group = data[x];
 						
-						group.sort(function(a, b) {
-							return a.Agemos - b.Agemos;
-						});
+						group.sort(sortByAge);
 						
 						len = group.length;
 						
@@ -36977,4 +36981,4 @@ if (!GC) {
 	};
 	
 	
-}());
+}(jQuery));

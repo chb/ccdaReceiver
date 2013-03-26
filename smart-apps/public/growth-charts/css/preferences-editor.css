@@ -87,10 +87,15 @@
 	padding: 4px;
 	border: 1px solid #728391 !important;
 	border-radius: 0 !important;
-	line-height: 20px !important;
+	line-height: 14px !important;
 	height: auto;
 	font-size: 12px;
 	font-family: Tahoma, sans-serif;
+}
+#preferences-editor input.step-input {
+	line-height: 14px !important;
+	height : 26px;
+	padding: 5px 4px;
 }
 #preferences-editor input[type="button"] {
 	min-width: 80px;
@@ -140,6 +145,8 @@
 #preferences-editor input[type="checkbox"],
 #preferences-editor input[type="radio"] {
 	width: auto;
+	vertical-align: middle;
+	margin-top: 0;
 }
 #preferences-editor #pref-view {
 	height: 100%;
@@ -181,8 +188,9 @@
 	height: .3em;
 	margin: 12px 8px;
 	width: 200px;
-	background: #FFF;
+	background: #EEE;
 	border-radius: 2px;
+	border-color: #CCC;
 }
 #preferences-editor .ui-slider .ui-slider-handle {
 	top: -0.5em;
@@ -197,7 +205,7 @@
 
 #preferences-editor #color-presets-list {
 	border: 1px solid #728391;
-	height: 150px;
+	height: 144px;
 	padding: 1px;
 	overflow: auto;
 	cursor: default;
@@ -205,7 +213,7 @@
 }
 
 #preferences-editor #color-presets-list .option {
-	padding: 4px 8px; 
+	padding: 2px 2px 2px 6px; 
 }
 
 #preferences-editor #color-presets-list .option:hover {

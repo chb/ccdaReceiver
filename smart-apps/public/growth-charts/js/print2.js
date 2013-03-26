@@ -5,7 +5,7 @@
 		parentalDarwn,
 		PATIENT = opener.GC.currentPatient;
 	
-	debugLog = console ? console.log : $.noop;
+	debugLog = window.console ? console.log : $.noop;
 	
 	$.extend(true, GC.chartSettings, opener.GC.chartSettings);
 	GC.translateFentonDatasets(PATIENT);
@@ -31,10 +31,7 @@
 		"getCorrectionalChartType",
 		"getPCTZ",
 		"getMetrics",
-		"getShowPretermArrows",
 		"getLanguage",
-		"getGestCorrectionDuration",
-		"getGestCorrectionType",
 		"getCorrectionAge"
 	], function(i, name) {
 		GC.App[name] = function() {
@@ -66,7 +63,7 @@
 				return;
 			}
 			
-			var rec = PATIENT.geModelEntryAtAgemos(agemos);
+			var rec = PATIENT.getModelEntryAtAgemos(agemos);
 			set(rec, rec ? rec.agemos : agemos, type);
 		};
 		
@@ -138,10 +135,16 @@
 		.toggleClass("view-charts"  , type == "graphs")
 		.toggleClass("view-table"   , type == "table" );
 		
+		document.title = PATIENT.name + (
+			type == "graphs" ? " - Charts" : 
+				type == "table" ? " - Data" : 
+					type == "parent" ? " - Parental View" : 
+						""
+		);
+		
 		switch (type) {
 			case "graphs":
-				firstRender = !leftPane;
-				if ( firstRender ) {
+				if ( !leftPane ) {
 					leftPane = new ChartPane(Raphael($("#stage .stage-1")[0]));
 					leftPane
 						.addChart( new GC.App.Charts["Length/Stature Chart"](), 0 )
@@ -160,9 +163,10 @@
 		
 			case "parent":
 				if (!parentalDarwn) {
-					drawPaper(600, 320, 0, 0, PATIENT);
+					GC.App.ParentalView = new GC.PView();
 					parentalDarwn = true;
 				}
+				$("#vitals-message .custom-notes").trigger("focus");
 				break;
 			
 			case "table":
@@ -171,15 +175,46 @@
 		}
 		
 		drawn = true;
+		//window.print();
 	}
 	
+	function translateHTML() {
+		$('[data-translatecontent]').each(function() {
+			$(this).html(GC.str(this.getAttribute("data-translatecontent")));
+		});
+	}
 	
 	$(function() {
 		
+		$("html").addClass(PATIENT.gender);
 		
-		$("#header").html(
-			'<h1>' + PATIENT.name + '</h1>'
-		);
+		//$("#header").html(
+		//	'<h1>' + PATIENT.name + '</h1>'
+		//);
+		
+		translateHTML();
+		
+		
+		$('.patient-name').text(PATIENT.name);
+		$('.patient-age').text(PATIENT.getCurrentAge().toString(GC.chartSettings.timeInterval));
+		$('.patient-birth').text(PATIENT.DOB.toString(GC.chartSettings.dateFormat));
+		$('.patient-gender').text(PATIENT.gender);
+		
+		if (PATIENT.weeker) {
+			$(".weeker").show().find(".value").html(PATIENT.weeker + " Weeker");
+		} else {
+			$(".weeker").hide();
+		}
+		
+		var currentAge   = PATIENT.getCurrentAge();
+		var correctedAge = PATIENT.getCorrectedAge();
+		if (correctedAge > currentAge || correctedAge < currentAge) {
+			$("#corrected-age").html(correctedAge.toString(GC.chartSettings.timeInterval)).parent().show();
+		} else {
+			$("#corrected-age").parent().hide();
+		}
+		
+		$("#today").text(new XDate().toString("ddMMMyyyy HH:MM TT"));
 		
 		setStageHeight();
 		draw();
@@ -210,4 +245,4 @@
 		
 	});
 	
-})();
+}());

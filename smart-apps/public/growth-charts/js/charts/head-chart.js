@@ -1,4 +1,4 @@
-/*global Chart, GC, PointSet, strPad, weeks2months, Raphael*/
+/*global Chart, GC, PointSet, Raphael*/
 /*jslint eqeq: true, nomen: true, plusplus: true */
 (function(NS, $) {
 	
@@ -37,15 +37,6 @@
 		
 		_get_dataPoints : function() {
 			return Chart.prototype._get_dataPoints.call( this, "headc" );
-		},
-		
-		getTooltipLabel : function( val ) {
-			if ( GC.App.getMetrics() == "eng" ) {
-				return GC.Util.round( 
-					val * GC.Constants.METRICS.INCHES_IN_CENTIMETER 
-				) + " in";
-			}
-			return GC.Util.round( val ) + " cm";
 		}
 	
 	});

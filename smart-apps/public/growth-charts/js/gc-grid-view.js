@@ -1,7 +1,7 @@
 /*global 
-Chart, GC, PointSet, strPad, weeks2months, Raphael, console, getLineXatY, $,
-jQuery, debugLog, cropCurvesDataX, getCurvesData, getYatX, findMinMax, scale,
-sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
+Chart, GC, PointSet, Raphael, console, $,
+jQuery, debugLog,
+XDate, setTimeout, getDataSet*/
 
 /*jslint undef: true, eqeq: true, nomen: true, plusplus: true, forin: true*/
 (function(NS, $) {
@@ -31,47 +31,80 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 		DAY        = HOUR * 24,
 		WEEK       = DAY * 7,
 		MONTH      = WEEK * 4.348214285714286,
-		YEAR       = MONTH * 12;
+		YEAR       = MONTH * 12,
+		
+		shortDateFormat = {
+			"Years"   : "y",
+			"Year"    : "y",
+			"Months"  : "m",
+			"Month"   : "m",
+			"Weeks"   : "w",
+			"Week"    : "w",
+			"Days"    : "d",
+			"Day"     : "d",
+			separator : " "
+		},
+		
+		boneAgeFormat = {
+			"Years"   : "y",
+			"Year"    : "y",
+			"Months"  : "m",
+			"Month"   : "m",
+			"Weeks"   : false,
+			"Week"    : false,
+			"Days"    : false,
+			"Day"     : false,
+			separator : " "
+		};
 	
 	function getLength( entry ) {
 		if ( entry.hasOwnProperty("lengthAndStature") ) {
-			if ( metrics == "metric" ) {
-				return GC.Util.roundToPrecision(entry.lengthAndStature, 1) + '<span class="units"> cm</span>'; 
-			}
-			return GC.Util.cmToUS(entry.lengthAndStature, '<span class="units">ft</span>', '<span class="units">in</span>');
+			return GC.Util.format(entry.lengthAndStature, {
+				type : "height",
+				foot : '<span class="units">\'</span>', 
+				inch : '<span class="units">\'\'</span>',
+				cm   : '<span class="units">cm</span>',
+				m    : '<span class="units">m</span>',
+				cmOnly : true,
+				separator : '<span class="unit-separator"></span>'
+			});
 		}
 		return EMPTY_MARK;
 	}
 	
 	function getWeight( entry ) {
 		if ( entry.hasOwnProperty("weight") ) {
-			if ( metrics == "metric" ) {
-				return GC.Util.roundToPrecision(entry.weight, 1) + '<span class="units"> kg</span>'; 
-			}
-			return GC.Util.kgToUS(entry.weight, '<span class="units">lb</span>', '<span class="units">oz</span>');
+			return GC.Util.format(entry.lengthAndStature, {
+				type : "weight",
+				lb   : '<span class="units">lb</span>', 
+				oz   : '<span class="units">oz</span>',
+				kg   : '<span class="units">kg</span>',
+				g    : '<span class="units">g</span>',
+				kgOnly : true,
+				separator : '<span class="unit-separator"></span>'
+			});
 		}
 		return EMPTY_MARK;
 	}
 	
 	function getHeadC( entry ) {
 		if ( entry.hasOwnProperty("headc") ) {
-			if ( metrics == "metric" ) {
-				return GC.Util.roundToPrecision(entry.headc, 1) + '<span class="units"> cm</span>'; 
-			}
-			return GC.Util.cmToUS(entry.headc, '<span class="units">ft</span>', '<span class="units">in</span>');
+			return GC.Util.format(entry.headc, {
+				type : "headc",
+				cm   : '<span class="units">cm</span>', 
+				inch : '<span class="units">in</span>'
+			});
 		}
 		return EMPTY_MARK;
 	}
 	
 	function getBMI( entry ) {
 		if ( entry.hasOwnProperty("bmi") ) {
-			if ( metrics == "metric" ) {
-				return GC.Util.roundToPrecision(entry.bmi, 1) + '<span class="units"> kg/m2</span>'; 
-			}
-			return GC.Util.roundToPrecision(
-				entry.bmi * GC.Constants.METRICS.KILOGRAMS_IN_POUND, 
-				1
-			) + '<span class="units">lb/ft2</span>';
+			return GC.Util.format(entry.bmi, { 
+				type       : "bmi",
+				unitMetric : "",
+				initImp    : ""
+			});
 		}
 		return EMPTY_MARK;
 	}
@@ -160,7 +193,7 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 			
 			if ( o.units ) {
 				colspan = 1;
-				$('<td/>').text( o.units[metrics] ).appendTo( tr );
+				$('<td/>').html( o.units[metrics] ).appendTo( tr );
 			} else if (o.secondCell) {
 				colspan = 1;
 				$('<td/>').html(o.secondCell).appendTo( tr );
@@ -208,26 +241,17 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 		
 		$.each(model, function( index, data ) {
 			//debugger;
-			var time = data.agemos * MONTH,
-				age  = new GC.TimeInterval(patient.DOB).setMonths(data.agemos),
-				date = age.getEndDate(),
+			var age  = new GC.TimeInterval(patient.DOB).setMonths(data.agemos),
+				date = new XDate(patient.DOB.getTime() + data.agemos * GC.Constants.TIME.MONTH),
 				sameDay = lastDate && lastDate.diffDays(date) < 1,
 				dateText = sameDay ? 
 					'<div style="text-align: center;font-size:20px">&bull;</div>' : 
-					date.toString(GC.chartSettings.dateFormat),
+					date.toString(
+						GC.chartSettings.dateFormat
+					),
 				years,
 				months,
 				days;
-				//console.log(age);
-				
-			years = Math.floor(time/YEAR);
-			time -= years * YEAR;
-			
-			months = Math.floor(time/MONTH);
-			time -= months * MONTH;
-			
-			days = Math.floor(time/DAY);
-			time -= days * DAY;
 			
 			// Header - Date
 			$('<th/>').append( 
@@ -239,18 +263,8 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 			$('<th/>')
 				.append( $('<div class=""/>').html(
 					sameDay ? 
-					new XDate(time).toString(GC.chartSettings.timeFormat) :
-					age.toString({
-						"Years"  : "y",
-						"Year"   : "y",
-						"Months" : "m",
-						"Month"  : "m",
-						"Weeks"  : "w",
-						"Week"   : "w",
-						"Days"   : "d",
-						"Day"    : "d",
-						separator : " "
-					})
+					date.toString(GC.chartSettings.timeFormat) :
+					age.toString(shortDateFormat)
 				)
 			).appendTo(thr2);
 			
@@ -274,12 +288,12 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 			lastDate = date;
 		});
 		
-		setTimeout(function() {
+		//setTimeout(function() {
 			updateDataTableLayout();
 			if (GC.SELECTION.selected.record) {
 				selectByAge(GC.SELECTION.selected.age.getMilliseconds(), true);
 			}
-		}, 0);
+		//}, 0);
 	}
 	
 	function isTableViewVisible() {
@@ -358,7 +372,7 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 			var model    = GC.App.getPatient().getModel(),
 				len      = model.length,
 				scroller = $(".datatable-scroller"),
-				duration = idx == selectedIndex ? 0 : 400,
+				duration = idx == selectedIndex ? 0 : 450,
 				cells, cell;
 			if ( idx < len ) {
 				// Inselect selected cells (if any)
@@ -377,6 +391,9 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 				
 				if (isTableViewVisible()) {
 					cell = cells[0];
+					if (duration) {
+						scroller.delay(13);
+					}
 					scroller.animate({ 
 						scrollLeft: cell.offsetLeft + cell.offsetWidth / 2 - scroller[0].clientWidth / 2 
 					}, duration);
@@ -397,13 +414,13 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 		function createAnnotationPopup(record) {
 			if (!_annotationPopup) {
 				_annotationPopup = $(
-					'<div id="annotation-popup">\
-						<div class="header">\
-							<div class="title">Annotation</div>\
-							<span class="close" title="Close"></span>\
-						</div>\
-						<div class="content"></div>\
-					</div>'
+					'<div id="annotation-popup">' +
+						'<div class="header">' +
+							'<div class="title">Annotation</div>' +
+							'<span class="close" title="Close"></span>' +
+						'</div>' +
+						'<div class="content"></div>' +
+					'</div>'
 				).appendTo("body");
 			}
 			
@@ -458,17 +475,7 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 				get   : function( entry, model ) {
 					return new GC.TimeInterval(patient.DOB)
 						.setMonths(entry.agemos)
-						.toString({
-							"Years"  : "y",
-							"Year"   : "y",
-							"Months" : "m",
-							"Month"  : "m",
-							"Weeks"  : "w",
-							"Week"   : "w",
-							"Days"   : "d",
-							"Day"    : "d",
-							separator : " "
-						});
+						.toString(shortDateFormat);
 				},
 				style : "text-align:left; color:black"
 			},
@@ -567,15 +574,7 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 					if (entry.hasOwnProperty("boneAge")) {
 						var time = new GC.TimeInterval();
 						time.setMonths(entry.boneAge);
-						return time.toString({
-							"Years"   : "yrs", 
-							"Year"    : "yr", 
-							"Months"  : "mts", 
-							"Month"   : "mnt", 
-							"Weeks"   : false,
-							"Days"    : false,
-							separator : " "
-						});
+						return time.toString(boneAgeFormat);
 					}
 					return EMPTY_MARK;
 				},
@@ -659,7 +658,7 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 					get   : function( entry, model ) {
 						return entry.annotation ? 
 							'<div class="annotation-wrap">' + 
-							ellipsis(entry.annotation.txt, 6, 36, "...") + 
+							GC.Util.ellipsis(entry.annotation.txt, 6, 36, "...") + 
 							'</div>' : 
 							"&#8212;";
 					},
@@ -667,19 +666,10 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 					secondCell : '<a href="javascript:GC.App.viewAnnotations();" class="annotations-see-all">See all</a>'
 				},
 				
-				// Med Service
-				//{
-				//	label : "STR_31", // Medical Service
-				//	get   : function( entry, model ) {
-				//		return "&#8212;";
-				//	},
-				//	rowClass : "med-service"
-				//},
-				
 				// Length
 				{
 					label : "STR_2", // Length
-					units : { metric : "cm", eng : "ft in" },
+					units : { metric : "cm", eng : "ft - in" },
 					get   : getLength,
 					rowClass : "length heading",
 					printrow : 1,
@@ -717,7 +707,7 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 				// Weight
 				{
 					label : "STR_6", // Weight
-					units : { metric : "kg", eng : "lb oz" },
+					units : { metric : "kg", eng : "lb - oz" },
 					get   : getWeight,
 					rowClass : "weight heading",
 					printrow : 1,
@@ -787,7 +777,7 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 				// BMI
 				{
 					label : "STR_14", // BMI
-					units : { metric : "kg/m2", eng : "lb/ft2" },
+					units : { metric : "kg/m2", eng : "lb/ft2x703" },
 					get   : getBMI,
 					rowClass : "bmi heading",
 					printrow : 1
@@ -795,7 +785,7 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 				
 				{
 					label : "STR_11", // Bone Age
-					units : { metric : "y m", eng : "y m" },
+					units : { metric : "y - m", eng : "y - m" },
 					get   : function( entry, model ) {
 						if (entry.hasOwnProperty("boneAge")) {
 							var time = new GC.TimeInterval();
@@ -807,10 +797,10 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 								"Month"   : "m", 
 								"Weeks"   : false,
 								"Days"    : false,
-								separator : " "
+								separator : '<span class="unit-separator"></span>'
 							});
 						}
-						return "&#8212;";
+						return EMPTY_MARK;
 					},
 					rowClass : "bone-age heading",
 					printrow : 1
@@ -855,14 +845,14 @@ sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout, getDataSet*/
 				}
 			});
 			
-			GC.Preferences.bind("set:metrics", function(e) {
+			GC.Preferences.bind("set:metrics set:nicu set:currentColorPreset", function(e) {
 				if (isTableViewVisible()) {
 					renderTableView("#view-table");
 				}
 			});
 			
 			GC.Preferences.bind("set:fontSize", function(e) {
-				updateDataTableLayout();
+				setTimeout(updateDataTableLayout, 0);
 			});
 			
 			GC.Preferences.bind("set:timeFormat", function(e) {

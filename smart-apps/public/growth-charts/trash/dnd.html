@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+<style>
+#layout-editor {
+	background: rgb(129,145,161);
+	border: 1px solid #001C3C;
+	padding: 4px;
+	box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+	position: absolute;
+	z-index: 200;
+	top: -1px;
+	left: 50%;
+	margin-left: -412px
+}
+#layout-editor #sortable4 {
+	background: #6A7D8F;
+}
+#layout-editor .connectedSortable div { 
+	margin: 0 5px 5px 5px; 
+	padding: 5px; 
+	font-size: 12px; 
+	cursor: move;
+	border-color: #001C3C;
+	color: #001C3C;
+}
+#layout-editor table {
+	empty-cells: show;
+	width: 800px;
+}
+#layout-editor th {
+	font-size: 12px; 
+	padding: 4px 10px;
+	color : #FFF;
+	text-shadow: 0 1px #001C3C;
+}
+#layout-editor td {
+	padding: 10px;
+	vertical-align: top;
+	border: 1px solid #001C3C;
+}
+#layout-editor .ui-state-highlight { 
+	height: 1.5em; 
+	line-height: 1.2em;
+	min-width: 100px;
+}
+</style>
+<script>
+$(function() {
+	$( ".connectedSortable" ).sortable({
+		connectWith: ".connectedSortable",
+		placeholder: "ui-state-highlight"
+	}).disableSelection();
+});
+</script>
+</head>
+<body>
+	<div id="layout-editor">
+		<table cellspacing="2">
+			<tr>
+				<th colspan="3">Visible Charts</th>
+				<th>Available Charts</th>
+			</tr>
+			<tr>
+				<td id="sortable1" class="connectedSortable">
+					<div class="ui-state-default">Length / Stature Chart</div>
+					<div class="ui-state-default">Weight Chart</div>
+				</td>
+				<td id="sortable2" class="connectedSortable">
+					<div class="ui-state-default">Percentiles Chart</div>
+					<div class="ui-state-default">Head Circumference Chart</div>
+				</td>
+				<td id="sortable3" class="connectedSortable"></td>
+				<td id="sortable4" class="connectedSortable"></td>
+			</tr>
+		</table>
+		<div style="text-align: center; padding: 10px;">
+			<input type="button" value=" Apply " />
+			<input type="button" value=" Close " />
+		</div>
+	</div>
+</body>
+</html>

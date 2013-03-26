@@ -10,81 +10,81 @@
 			name           : "Demo Patient", 
 			birthday       : "2001-04-23", 
 			gender         : "male",
-			gestationalAge : -2
+			gestationalAge : 32
 		},
 		
 		// vitals
 		{
 			lengthData : [
-				{agemos: 0            , value: 51 },
-				{agemos: 0.0300001001  , value: 52 },
-				{agemos: 0.0310001001  , value: 51.5 },
-				{agemos: 0.0321102183  , value: 51.8 },
+				{agemos: 0           , value: 51 },
+				{agemos: 0.0300001001, value: 52 },
+				{agemos: 0.0310001001, value: 51.5 },
+				{agemos: 0.0321102183, value: 51.8 },
 				
-				{agemos: 0.5, value: 54 },
-                {agemos: 1  , value: 55 },
-				{agemos: 1.5, value: 56 },
-				{agemos: 2  , value: 58 },
-				{agemos: 3  , value: 58 },
-				{agemos: 4  , value: 59 },
-				{agemos: 5  , value: 61 },
-				{agemos: 6  , value: 67 },
-				{agemos: 9  , value: 77 },
-				{agemos: 12 , value: 79 },
-				{agemos: 18 , value: 85 }
+				{agemos: 0.5, value: 54.1234 },
+                {agemos: 1  , value: 55.1334 },
+				{agemos: 1.5, value: 56.2345 },
+				{agemos: 2  , value: 58.3456 },
+				{agemos: 3  , value: 58.4567 },
+				{agemos: 4  , value: 59.6789 },
+				{agemos: 5  , value: 61.1324 },
+				{agemos: 6  , value: 67.8764 },
+				{agemos: 9  , value: 77.8763 },
+				{agemos: 12 , value: 79.3249 },
+				{agemos: 18 , value: 85.3423 }
 			],
 			statureData : [],
 			weightData : [
-				{agemos: 0  , value: 3.5  },
-				{agemos: 0.5, value: 3.6  },
-				{agemos: 1  , value: 3.9  },
-				{agemos: 1.5, value: 4.2  },
-				{agemos: 2  , value: 4.8  },
-				{agemos: 2.5, value: 5.3  },
-				{agemos: 3  , value: 5.8  },
-				{agemos: 4  , value: 6.5  },
-				{agemos: 5  , value: 7.4  },
-                {agemos: 6  , value: 9.2  },
-                {agemos: 9  , value: 9.4  },
-                {agemos: 12 , value: 9.5  },
-                {agemos: 15 , value: 9.8  },
-                {agemos: 20 , value: 11.1 }
+				{agemos: 0  , value: 3.5234  },
+				{agemos: 0.5, value: 3.6456  },
+				{agemos: 1  , value: 3.9767  },
+				{agemos: 1.5, value: 4.2678  },
+				{agemos: 2  , value: 4.8567  },
+				{agemos: 2.5, value: 5.3768  },
+				{agemos: 3  , value: 5.8345  },
+				{agemos: 4  , value: 6.5657  },
+				{agemos: 5  , value: 7.4676  },
+                {agemos: 6  , value: 9.2767  },
+                {agemos: 9  , value: 9.4345  },
+                {agemos: 12 , value: 9.5456  },
+                {agemos: 15 , value: 9.8567  },
+                {agemos: 20 , value: 11.1456 }
 			],
 			headCData : [
-				{agemos: 0  , value: 34},
-                {agemos: 0.5, value: 36},
-                {agemos: 1.2, value: 38},
-                {agemos: 2.4, value: 40},
-                {agemos: 3  , value: 41},
-                {agemos: 4.5, value: 43},
-				{agemos: 5  , value: 44},
-				{agemos: 6  , value: 45},
-				{agemos: 7  , value: 45},
-				{agemos: 8  , value: 46},
-				{agemos: 9  , value: 46},
-				{agemos: 10 , value: 47},
-				{agemos: 11 , value: 47},
-				{agemos: 12 , value: 47},
-				{agemos: 15 , value: 48},
-				{agemos: 18 , value: 48},
-				{agemos: 21 , value: 49}
+				{agemos: 0  , value: 34.3424},
+                {agemos: 0.5, value: 36.3455},
+                {agemos: 1.2, value: 38.3453},
+                {agemos: 2.4, value: 40.5645},
+                {agemos: 3  , value: 41.5675},
+                {agemos: 4.5, value: 43.6786},
+				{agemos: 5  , value: 44.2342},
+				{agemos: 6  , value: 45.3453},
+				{agemos: 7  , value: 45.4565},
+				{agemos: 8  , value: 46.7867},
+				{agemos: 9  , value: 46.7897},
+				{agemos: 10 , value: 47.8089},
+				{agemos: 11 , value: 47.7888},
+				{agemos: 12 , value: 47.8908},
+				{agemos: 15 , value: 48.4565},
+				{agemos: 18 , value: 48.6687},
+				{agemos: 21 , value: 49.678678678}
 			],
 			BMIData : [
-				{agemos: 0  , value: 15   },
-				{agemos: 2  , value: 15.5 },
-				{agemos: 4  , value: 15.7 },
-				{agemos: 6  , value: 15.6 },
-				{agemos: 9  , value: 15.24},
-				{agemos: 12 , value: 15.34},
-				{agemos: 15 , value: 16.34},
-				{agemos: 19 , value: 17.34}
+				{agemos: 0  , value: 15.3453   },
+				{agemos: 2  , value: 15.54564 },
+				{agemos: 4  , value: 15.7567 },
+				{agemos: 6  , value: 15.656756 },
+				{agemos: 9  , value: 15.2435},
+				{agemos: 12 , value: 15.34678},
+				{agemos: 15 , value: 16.347897},
+				{agemos: 19 , value: 17.342468}
 			]
 		},
 		
 		// allergies
 		{
-			positive: [ "Kryptonite" ],
-			negative: []
+			positive: [ "Green kryptonite", "Blue kryptonite" ],
+			negative: [ "Sunlight" ]
 		},
 		
 		// familyHistory
@@ -101,23 +101,7 @@
 		[
 			{agemos: 1  , annotation: { txt : "Just turned one month!" }},
 			{agemos: 1.5, annotation: { txt : "Just wanted to type something here" }},
-			{agemos: 2  , annotation: { txt : "Lorem ipsum dolor sit amet, consectetur adipiscing elit. \
-			Nulla eu mauris a tellus feugiat luctus egestas non ligula. Aliquam erat volutpat. Nulla facilisi. \
-			Cras scelerisque, lacus et luctus convallis, nulla tortor scelerisque arcu, a viverra ligula tortor eget nulla. \
-			Quisque venenatis ipsum et odio pellentesque aliquam. Sed id semper lectus. Phasellus dapibus ultricies arcu, \
-			sit amet vulputate enim posuere vel. Fusce suscipit aliquet posuere. Etiam scelerisque mollis rutrum. \
-			Aliquam imperdiet tempor erat, quis placerat velit placerat ac. Aliquam erat volutpat. Donec sed orci ligula, \
-			vitae gravida massa. Quisque bibendum lacus sed nulla cursus dignissim. Integer lectus enim, pharetra ac posuere ut, \
-			ornare eu libero. <br/><br/>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; \
-			Nullam et libero justo, ut sagittis mi. Vestibulum faucibus dui eu odio lacinia sed porta augue imperdiet. \
-			Pellentesque purus erat, malesuada eget dictum sed, dapibus sit amet arcu. Cras sed imperdiet metus. Nullam aliquam \
-			vulputate risus, rhoncus ornare elit cursus a. In felis ipsum, venenatis at gravida sed, venenatis nec sapien. \
-			Fusce ac massa metus. <br/><br/>Ut fringilla hendrerit orci, ut tristique risus bibendum vel. Ut ac turpis urna. Integer \
-			auctor elementum nibh ultricies dictum. Quisque in neque eu nulla cursus pharetra. In ultrices vehicula vestibulum. \
-			Etiam mollis dui ac arcu lacinia venenatis. Nam eget magna sit amet justo vulputate sodales. Nunc condimentum purus \
-			vel mauris hendrerit sit amet volutpat libero iaculis. Pellentesque habitant morbi tristique senectus et netus et \
-			malesuada fames ac turpis egestas. Proin ultrices fermentum dolor id pharetra. Donec elementum, nunc non rhoncus \
-			tempus, mi mauris luctus nisl, vel adipiscing lacus nunc at lorem." }},
+			{agemos: 2  , annotation: { txt : "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eu mauris a tellus feugiat luctus egestas non ligula. Aliquam erat volutpat. Nulla facilisi. Cras scelerisque, lacus et luctus convallis, nulla tortor scelerisque arcu, a viverra ligula tortor eget nulla. Quisque venenatis ipsum et odio pellentesque aliquam. Sed id semper lectus. Phasellus dapibus ultricies arcu, sit amet vulputate enim posuere vel. Fusce suscipit aliquet posuere. Etiam scelerisque mollis rutrum. Aliquam imperdiet tempor erat, quis placerat velit placerat ac. Aliquam erat volutpat. Donec sed orci ligula, vitae gravida massa. Quisque bibendum lacus sed nulla cursus dignissim. Integer lectus enim, pharetra ac posuere ut, ornare eu libero. <br/><br/>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nullam et libero justo, ut sagittis mi. Vestibulum faucibus dui eu odio lacinia sed porta augue imperdiet. Pellentesque purus erat, malesuada eget dictum sed, dapibus sit amet arcu. Cras sed imperdiet metus. Nullam aliquam vulputate risus, rhoncus ornare elit cursus a. In felis ipsum, venenatis at gravida sed, venenatis nec sapien. Fusce ac massa metus. <br/><br/>Ut fringilla hendrerit orci, ut tristique risus bibendum vel. Ut ac turpis urna. Integer auctor elementum nibh ultricies dictum. Quisque in neque eu nulla cursus pharetra. In ultrices vehicula vestibulum. Etiam mollis dui ac arcu lacinia venenatis. Nam eget magna sit amet justo vulputate sodales. Nunc condimentum purus vel mauris hendrerit sit amet volutpat libero iaculis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Proin ultrices fermentum dolor id pharetra. Donec elementum, nunc non rhoncus tempus, mi mauris luctus nisl, vel adipiscing lacus nunc at lorem." }},
 			{agemos: 5  , annotation: { txt : "The baby was crying a lot and the measurements are not very relyable" }},
 			{agemos: 6  , annotation: { txt : "This is a test annotation" }},
 			{agemos: 15 , annotation: { txt : "Just wanted to type that 44 is less than 55" }}
@@ -133,11 +117,60 @@
 		]
 	);
 	
+	var Patient6 = new GC.Patient(
+		
+		// demographics
+		{
+			name           : "Demo Patient 2", 
+			birthday       : (new XDate()).addMonths(-1.8).toString(), 
+			gender         : "male",
+			gestationalAge : 36
+		},
+		
+		// vitals
+		{
+			lengthData : [
+				{agemos: 0.5, value: 43 },
+                {agemos: 1  , value: 47 },
+				{agemos: 1.5, value: 50 }
+			],
+			statureData : [],
+			weightData : [
+				{agemos: 0  , value: 2  },
+				{agemos: 0.5, value: 2.6  },
+				{agemos: 1  , value: 2.9  },
+				{agemos: 1.5, value: 3.2  }
+			],
+			headCData : [
+				{agemos: 0  , value: 30},
+                {agemos: 0.5, value: 31},
+                {agemos: 1.2, value: 33}
+			],
+			BMIData : []
+		},
+		
+		// allergies
+		{
+			positive: [],
+			negative: []
+		},
+		
+		// familyHistory
+		{
+			father : {
+				height: 185
+			},
+			mother : {
+				height: 170
+			}
+		}
+	);
+	
 	/* Patient 1 ===============================================================
 	12/07/2011	EDD			Father Height	75%	CDC
 	09/16/2011	DOB			Mother Height	63%	CDC
 	16.4	Months at last recording					
-	28.3 	Weeker					
+	28.3    Weeker					
 	*/							
 	var Patient1 = new GC.Patient(
 		
@@ -146,7 +179,7 @@
 			name     : "Steve Richey", 
 			birthday : "09/16/2011", 
 			EDD      : "12/07/2011",
-			gender   : "male",
+			gender   : "male"
 			
 		},
 		
@@ -173,8 +206,8 @@
 				{ agemos: 0.0,  value: 0.977},
 				{ agemos: 2.2,  value: 2.382},	
 				{ agemos: 2.5,  value: 2.636},
-				{ agemos: 3.0,  value: 3.0 	},			
-				{ agemos: 3.8,  value: 4.1 	}, 			
+				{ agemos: 3.0,	value: 3.0 	},			
+				{ agemos: 3.8,	value: 4.1 	}, 			
 				{ agemos: 4.6,  value: 4.6  },			
 				{ agemos: 4.8,  value: 4.7  },			
 				{ agemos: 5.8,  value: 5.4  }, 			
@@ -589,7 +622,8 @@
 		Patient2,
 		Patient3,
 		Patient4,
-		Patient5
+		Patient5,
+		Patient6
 	];
 	
 	GC.samplePatient = Patient0;

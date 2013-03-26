@@ -238,7 +238,7 @@ MiniLineChart.prototype.scaleX = function(n) {
 	
 	var bounds = this.getDataBounds();
 	
-	return scale(
+	return GC.Util.scale(
 		n, 
 		bounds.minX, 
 		bounds.maxX, 
@@ -264,7 +264,7 @@ MiniLineChart.prototype.scaleY = function(n) {
 	
 	var bounds  = this.getDataBounds();
 	
-	return scale(
+	return GC.Util.scale(
 		n, 
 		bounds.minY, 
 		bounds.maxY, 

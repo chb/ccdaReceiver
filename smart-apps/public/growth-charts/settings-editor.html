@@ -18,6 +18,7 @@
 						<option value="panel-dates">Date &amp; Time</option>
 						<option value="panel-units">Units of Measure</option>
 					</optgroup>
+					<option value="panel-about">About</option>
 				</select>
 			</td>
 			<td style="vertical-align:top;padding-left:10px;">
@@ -59,62 +60,6 @@
 							<td colspan="4"><br /></td>
 						</tr>
 					</table>
-					
-					
-					
-					<!--table>
-						<tr>
-							<td width="100%">Length and Stature</td>
-							<td><input type="color" name="lengthAndStature"/></td>
-						</tr>
-						<tr>
-							<td colspan="2">
-								<div class="separator"></div>
-							</td>
-						</tr>
-						<tr>
-							<td>Weight</td>
-							<td><input type="color" name="weight"/></td>
-						</tr>
-						<tr>
-							<td colspan="2">
-								<div class="separator"></div>
-							</td>
-						</tr>
-						<tr>
-							<td>Head Circumference</td>
-							<td><input type="color" name="headc"/></td>
-						</tr>
-						<tr>
-							<td colspan="2">
-								<div class="separator"></div>
-							</td>
-						</tr>
-						<tr>
-							<td>Body Mass Iindex</td>
-							<td><input type="color" name="bmi"/></td>
-						</tr>
-						
-						<tr>
-							<td colspan="2">
-								<div class="separator"></div>
-							</td>
-						</tr>
-						<tr>
-							<td>Selection Color</td>
-							<td><input type="color" name="selectionLine.stroke" /></td>
-						</tr>
-						
-						<tr>
-							<td colspan="2">
-								<div class="separator"></div>
-							</td>
-						</tr>
-						<tr>
-							<td>Mouse-over Selection Color</td>
-							<td><input type="color" name="hoverSelectionLine.stroke" /></td>
-						</tr>
-					</table-->
 				</div>
 				<div id="panel-fonts" class="prefs-panel">
 					<h1>Fonts</h1>
@@ -153,7 +98,7 @@
 					<table>
 						<tr>
 							<td width="100%">Aspect Ratio</td>
-							<td>
+							<td colspan="2">
 								<select name="aspectRatio">
 									<option value="0.625">1:1.6 (CDC)</option>
 									<option value="1">1:1 (square)</option>
@@ -167,13 +112,38 @@
 							</td>
 						</tr>
 						<tr>
-							<td colspan="2">
+							<td colspan="3">
 								<div class="separator"></div>
 							</td>
 						</tr>
 						<tr>
-							<td>Max Width</td>
-							<td><input name="maxWidth" type="text"/></td>
+							<td colspan="3">
+								<label>
+									<input type="radio" name="paper-width-type" value="auto" /> 
+									Flexible width
+								</label>
+							</td>
+						</tr>
+						<tr class="paper-max-width-row">
+							<td>&nbsp;</td>
+							<td style="text-align:right">Max Width</td>
+							<td><input name="maxWidth" type="text" style="width:120px"/></td>
+						</tr>
+						<tr>
+							<td colspan="3">&nbsp;</td>
+						</tr>
+						<tr>
+							<td colspan="3">
+								<label>
+									<input type="radio" name="paper-width-type" value="fixed" /> 
+									Fixed width
+								</label>
+							</td>
+						</tr>
+						<tr class="paper-width-row">
+							<td>&nbsp;</td>
+							<td style="text-align:right">Width</td>
+							<td><input name="paperWidth" type="text" style="width:120px" /></td>
 						</tr>
 					</table>
 				</div>
@@ -388,9 +358,40 @@
 						</tr>
 					</table>
 				</div>
+				<div id="panel-about" class="prefs-panel">
+					<h1>Growth Charts Application</h1>
+					<span>Version: </span><span class="app-ver"></span><br /><br />
+					Authors, credits etc.
+					<br /><br />
+					<br /><br />
+					<br /><br />
+					<br /><br />
+					<br /><br />
+					<br /><br />
+					<br /><br />
+					<br /><br />
+					<br /><br />
+				</div>
 				<div id="panel-units" class="prefs-panel">
 					<h1>Units of Measure</h1>
-					<table class="round-precisions ui-state-disabled">
+					<table class="round-precisions">
+						<tr>
+							<td colspan="3"><b>Percentile Range:</b><br /><td>
+						</tr>
+						<tr>
+							<td colspan="3">
+								<label>
+									<input type="radio" name="percentile" value="0.03,0.15,0.5,0.85,0.97" /> 
+									03rd, 15th, 50th, 85th, 97th 
+								</label><br />
+								<label>
+									<input type="radio" name="percentile" value="0.05,0.15,0.5,0.85,0.95" /> 
+									05th, 15th, 50th, 85th, 95th 
+								</label>
+								<br />
+								<br />
+							</td>
+						</tr>
 						<tr>
 							<td colspan="3"><b>Rounding precisions</b><br>(The max. number of digits after the decimal point)</td>
 						</tr>
@@ -425,11 +426,6 @@
 							<td><select name="roundPrecision.bmi.nicu"></select></td>
 						</tr>
 						<tr>
-							<td width="100%">Percentages</td>
-							<td><select name="roundPrecision.percentage.std"></select></td>
-							<td><select name="roundPrecision.percentage.nicu"></select></td>
-						</tr>
-						<tr>
 							<td width="100%">Percentiles</td>
 							<td><select name="roundPrecision.percentile.std"></select></td>
 							<td><select name="roundPrecision.percentile.nicu"></select></td>
@@ -442,19 +438,21 @@
 						<tr>
 							<td>Velocity Denominator</td>
 							<td>
-								<select name="" class="velocity-denominator">
-									<option>Daily</option>
-									<option>Weekly</option>
-									<option>Monthly</option>
-									<option>Yearly</option>
+								<select name="roundPrecision.velocity.std" class="velocity-denominator">
+									<option value="year">Years</option>
+									<option value="month">Months</option>
+									<option value="week">Weeks</option>
+									<option value="day">Days</option>
+									<option value="auto">Auto</option>
 								</select>
 							</td>
 							<td>
-								<select name="" class="velocity-denominator">
-									<option>Daily</option>
-									<option>Weekly</option>
-									<option>Monthly</option>
-									<option>Yearly</option>
+								<select name="roundPrecision.velocity.nicu" class="velocity-denominator">
+									<option value="year">Years</option>
+									<option value="month">Months</option>
+									<option value="week">Weeks</option>
+									<option value="day">Days</option>
+									<option value="auto">Auto</option>
 								</select>
 							</td>
 						</tr>

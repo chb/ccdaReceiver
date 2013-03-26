@@ -1,11 +1,9 @@
 /*global 
- Chart, GC, PointSet, strPad, weeks2months, Raphael, console, getLineXatY, $,
- jQuery, debugLog, cropCurvesDataX, getCurvesData, getYatX, findMinMax, scale,
- sumLinesY
- */
+ Chart, GC, PointSet, Raphael, console, $,
+ jQuery, debugLog */
 
 /*jslint eqeq: true, nomen: true, plusplus: true */
-"use strict";
+//"use strict";
 
 function Chart( pane ) 
 {
@@ -176,8 +174,8 @@ Chart.prototype = {
 	
 	// @primaryCurvesData
 	_get_primaryCurvesData : function() {
-		return cropCurvesDataX( 
-			getCurvesData( this.dataSet ), 
+		return GC.Util.cropCurvesDataX( 
+			GC.Util.getCurvesData( this.dataSet ), 
 			GC.App.getStartAgeMos(), 
 			GC.App.getEndAgeMos() 
 		);
@@ -213,8 +211,8 @@ Chart.prototype = {
 	
 	// @secondaryCurvesData
 	_get_secondaryCurvesData : function() {
-		return cropCurvesDataX( 
-			getCurvesData( this.problemDataSet ), 
+		return GC.Util.cropCurvesDataX( 
+			GC.Util.getCurvesData( this.problemDataSet ), 
 			GC.App.getStartAgeMos(), 
 			GC.App.getEndAgeMos() 
 		);
@@ -222,12 +220,12 @@ Chart.prototype = {
 	
 	// @primaryCurvesDataRaw
 	_get_primaryCurvesDataRaw : function() {
-		return getCurvesData( this.dataSet );
+		return GC.Util.getCurvesData( this.dataSet );
 	},
 	
 	// @secondaryCurvesDataRaw
 	_get_secondaryCurvesDataRaw : function() {
-		return getCurvesData( this.problemDataSet );
+		return GC.Util.getCurvesData( this.problemDataSet );
 	},
 	
 	// @primaryDataRange
@@ -279,57 +277,6 @@ Chart.prototype = {
 		out.minY = Math.min.apply({}, out.minY);
 		out.maxX = Math.max.apply({}, out.maxX);
 		out.maxY = Math.max.apply({}, out.maxY);
-		
-		//out.minX = Math.max(out.minX, GC.App.setStartAgeMos());
-		//out.maxX = Math.min(out.maxX, GC.App.getEndAgeMos());
-		
-		/* DEBUG 
-		var inst = this;
-		setTimeout(function() {
-			inst._nodes.push(inst.pane.paper.circle(
-				inst._scaleX(out.minX), 
-				inst._scaleY(out.minY), 
-				2
-			));
-			inst._nodes.push(inst.pane.paper.text(
-				inst._scaleX(out.minX), 
-				inst._scaleY(out.minY), 
-				Math.round(out.minX) + "___" + Math.round(out.minY)
-			));
-			
-			inst._nodes.push(inst.pane.paper.circle(
-				inst._scaleX(out.maxX), 
-				inst._scaleY(out.minY), 
-				2
-			));
-			inst._nodes.push(inst.pane.paper.text(
-				inst._scaleX(out.maxX), 
-				inst._scaleY(out.minY), 
-				Math.round(out.maxX) + "___" + Math.round(out.minY)
-			));
-			
-			inst._nodes.push(inst.pane.paper.circle(
-				inst._scaleX(out.minX), 
-				inst._scaleY(out.maxY), 
-				2
-			));
-			inst._nodes.push(inst.pane.paper.text(
-				inst._scaleX(out.minX), 
-				inst._scaleY(out.maxY), 
-				Math.round(out.minX) + "___" + Math.round(out.maxY)
-			));
-			
-			inst._nodes.push(inst.pane.paper.circle(
-				inst._scaleX(out.maxX), 
-				inst._scaleY(out.maxY), 
-				2
-			));
-			inst._nodes.push(inst.pane.paper.text(
-				inst._scaleX(out.maxX), 
-				inst._scaleY(out.maxY), 
-				Math.round(out.maxX) + "___" + Math.round(out.maxY)
-			));
-		}, 0);*/
 		
 		return out;
 	}, 
@@ -508,7 +455,7 @@ Chart.prototype = {
 			if ( i === 0 ) {
 				out = l;
 			} else {
-				out = sumLinesY(out, l, "max", 100);
+				out = GC.Util.sumLinesY(out, l, "max", 100);
 			}
 		});
 		
@@ -583,7 +530,7 @@ Chart.prototype = {
 			if ( i === 0 ) {
 				out = l;
 			} else {
-				out = sumLinesY(out, l, "min", 100);
+				out = GC.Util.sumLinesY(out, l, "min", 100);
 			}
 		});
 		
@@ -782,8 +729,6 @@ Chart.prototype = {
 	/**
 	 * Returns the height of the chart. This is called by the ChartPane 
 	 * container while it is trying to align it's chart children.
-	 * TODO: This needs to be dynamic. The grid must have it's max-density and 
-	 * the chart may need to be drawn higher match that.
 	 * @returns {Number}
 	 */
 	getHeight : function() 
@@ -856,7 +801,7 @@ Chart.prototype = {
 	
 	_scaleX : function(n) 
 	{
-		return scale (n, GC.App.getStartAgeMos(), GC.App.getEndAgeMos(), this.x, this.x + this.width);
+		return GC.Util.scale (n, GC.App.getStartAgeMos(), GC.App.getEndAgeMos(), this.x, this.x + this.width);
 	},
 	
 	_scaleY : function(n) 
@@ -865,7 +810,7 @@ Chart.prototype = {
 			curvesTop   = this.y + titleHeight,
 			dataBounds  = this.get("dataBounds");
 		
-		return scale (
+		return GC.Util.scale (
 			n, 
 			dataBounds.minY, 
 			dataBounds.maxY, 
@@ -884,8 +829,14 @@ Chart.prototype = {
 					});
 				}
 			});
-			//GC.Tooltip.reorder();
+			GC.Tooltip.reorder();
 		}
+	},
+	
+	getLocalizedValue : function(val) {
+		return GC.Util.format(val, {
+			type : this.patientDataType
+		});
 	},
 	
 	/**
@@ -901,9 +852,12 @@ Chart.prototype = {
 		
 		// Calculate the new points and draw them, pushing the elements to  
 		// "this._selectionNodes" collection to make them removable later.
-		var pts  = this.getDataPointsAtMonth( weeks2months( ageWeeks ) ), 
+		var pts  = this.getDataPointsAtMonth( GC.Util.weeks2months( ageWeeks ) ), 
 			l    = pts.length, 
 			pctz = GC.App.getPCTZ(),
+			metrics = GC.App.getMetrics(),
+			arrowType = false,
+			text2,
 			bg,
 			i;
 		
@@ -921,9 +875,44 @@ Chart.prototype = {
 		bg = Raphael.hsl(bg.h, bg.s, bg.l);
 		
 		for ( i = 0; i < l; i++ ) {
-			if (type == "selected" || !$.grep(
-				this._selectionNodes.selected, 
-				hasSamePoint(pts[i])).length) {
+			if (type == "selected" || !$.grep(this._selectionNodes.selected, hasSamePoint(pts[i])).length) {
+				
+				text2 = pctz == "pct" && pts[i].data.pct !== undefined ? 
+					GC.Util.format(pts[i].data.pct * 100, {type : "percentile" }) : 
+					pctz == "z" && pts[i].data.z !== undefined ? 
+						GC.Util.format(pts[i].data.z, {type : "zscore" }) : 
+						"N/A";
+				
+				if (type == "hover") {
+					var selected = GC.SELECTION.selected;
+					//console.log(selected)
+					if (selected && selected.age) {
+						
+						var patient = GC.App.getPatient(),
+							selectedRecord = patient.getModelEntryAtAgemos(selected.age.getMonths());
+						
+						if (selectedRecord && selectedRecord[this.patientDataType] !== undefined) {
+							
+							var atRecord = {
+								agemos : pts[i].data.agemos
+							};
+							atRecord[this.patientDataType] = pts[i].data.value;
+							
+							var v = GC.App.getPatient().getVelocity(
+								this.patientDataType, 
+								atRecord, 
+								selectedRecord
+							);
+							
+							if (v !== null && this.getLocalizedValue) {
+								v = this.getLocalizedValue(v.value) + v.suffix;
+								text2 += " | " + v;
+								arrowType = true;
+							}
+						}
+					}
+				}
+				
 				this._selectionNodes[type].push(
 					this.pane.paper.circle(
 						pts[i].x, pts[i].y, 5
@@ -941,20 +930,21 @@ Chart.prototype = {
 					GC.tooltip(this.pane.paper, {
 						x      : pts[i].x,
 						y      : pts[i].y,
-						//id     : "point-" + this.patientDataType + "-" + this.ID,
 						shiftY : 30,
 						shadowOffsetX : -15,
 						shadowOffsetY : 5,
-						bg     : type == "selected" ? GC.chartSettings.selectionLine.stroke : GC.chartSettings.hoverSelectionLine.stroke,
-						text   : pts[i].data.label === undefined ? 
+						
+						bg : type == "selected" ? 
+							GC.chartSettings.selectionLine.stroke : 
+							GC.chartSettings.hoverSelectionLine.stroke,
+						
+						text : pts[i].data.label === undefined ? 
 							"No data" : 
 							pts[i].data.label,
-						text2  : pctz == "pct" && pts[i].data.pct !== undefined ? 
-							GC.Util.roundToPrecision(pts[i].data.pct * 100, GC.chartSettings.roundPrecision.percentile.std) + " %" : 
-							pctz == "z" && pts[i].data.z !== undefined ? 
-								GC.Util.roundToPrecision(pts[i].data.z, GC.chartSettings.roundPrecision.zscore.std)  + " Z" : 
-								"N/A",
-						text2bg : bg
+						
+						text2     : text2,
+						text2bg   : bg,
+						arrowType : arrowType
 					})
 				);
 			}
@@ -1052,34 +1042,8 @@ Chart.prototype = {
 	 * @param {Number} val The value to compile the text for.
 	 * @returns {String} The tooltip text  
 	 */
-	getTooltipLabel : function( val ) 
-	{
-		var currentMeasurementSystem = GC.App.getMetrics(),
-			sourceMeasurementSystem  = this.dataSet ? 
-				GC.DATA_SETS[this.dataSet].measurement : 
-				currentMeasurementSystem,
-			currentUnits = this.getUnits(),
-			sourceUnits = this.dataSet ? 
-				GC.DATA_SETS[this.dataSet].units || "" : 
-				"";
-		
-		if ( currentMeasurementSystem !== sourceMeasurementSystem ) {
-			switch ( sourceUnits ) {
-				case "cm":
-					return GC.Util.cmToUS(val);
-				case "kg":
-					return GC.Util.kgToUS(val);
-				case "kg/m3":
-					return GC.Util.roundToPrecision( 
-						GC.Util.floatVal(val) * GC.Constants.METRICS.KILOGRAMS_IN_POUND,
-						2 
-					) + " lb/ft3";
-				default: 
-					return GC.Util.roundToPrecision(val, 2) + " " + currentUnits;
-			}
-		}
-		
-		return GC.Util.roundToPrecision(val, 2) + " " + sourceUnits;
+	getTooltipLabel : function( val ) {
+		return this.getLocalizedValue(val);
 	},
 	
 	/**
@@ -1118,8 +1082,8 @@ Chart.prototype = {
 			if (pointsLen) {
 				ptA       = points[0];
 				ptB       = points[pointsLen - 1];
-				before    = { x : findMinMax(points, "x").min, y : ptA.y };
-				after     = { x : findMinMax(points, "x").max, y : ptB.y };
+				before    = { x : GC.Util.findMinMax(points, "x").min, y : ptA.y };
+				after     = { x : GC.Util.findMinMax(points, "x").max, y : ptB.y };
 				for ( j = 0; j < pointsLen; j++ ) {
 					if (points[j].x < x && points[j].x > before.x) {
 						before = points[j];
@@ -1129,9 +1093,9 @@ Chart.prototype = {
 					}
 				}
 				
-				val = getYatX(x, before.x, before.y, after.x, after.y);
+				val = GC.Util.getYatX(x, before.x, before.y, after.x, after.y);
 				if ( !isNaN( val ) && isFinite( val ) ) {
-					out[i] = getYatX(x, before.x, before.y, after.x, after.y);
+					out[i] = GC.Util.getYatX(x, before.x, before.y, after.x, after.y);
 				}
 			}
 		}
@@ -1263,7 +1227,7 @@ Chart.prototype = {
 						// Clip each line with s.rightAxisInnerShadow.width pixels from 
 						// it's right side (if it goes beyond that X coordinate)
 						if ( _x > x2 ) { 
-							_y = getYatX( x2, x, y, _x, _y );
+							_y = GC.Util.getYatX( x2, x, y, _x, _y );
 							_x = x2;
 						}
 						
@@ -1408,8 +1372,11 @@ Chart.prototype = {
 			doRotate = false;
 			doCurve = false;
 		}
-		//doRotate = false;
-		//doCurve = false;
+		
+		if (!this.dataSet || (this.dataSet && this.problemDataSet && this.dataSet != this.problemDataSet)) {
+			doRotate = false;
+			doCurve = false;
+		}
 		
 		// Try to render curved text on SVG browsers
 		if ( doCurve ) {
@@ -1491,7 +1458,7 @@ Chart.prototype = {
 			txt.attr({
 				"transform": "r-" + angle,
 				y : this._scaleY(vals[vals.length - 1]) - 
-					GC.chartSettings.chartLabels.attr["font-size"] 
+					GC.chartSettings.chartLabels.attr["font-size"] * 2/3
 			});
 		}
 		
@@ -1621,8 +1588,8 @@ Chart.prototype = {
 			val = GC.Util.roundToPrecision(i, precision);
 			
 			// Horizontal lines ------------------------------------------------
-			intersectTop    = getLineXatY(topOutline, y) - 20;
-			intersectBottom = getLineXatY(bottomOutline, y) + 20;
+			intersectTop    = GC.Util.getLineXatY(topOutline, y) - 20;
+			intersectBottom = GC.Util.getLineXatY(bottomOutline, y) + 20;
 			
 			intersectTop = Math.min(
 				Math.max(intersectTop, this.x), 
@@ -1838,7 +1805,7 @@ Chart.prototype = {
 			});
 			
 			// Draw the dot
-			entry = patient.geModelEntryAtAgemos(point.agemos);
+			entry = patient.getModelEntryAtAgemos(point.agemos);
 			elem = inst.drawDot(x, y, {
 				firstMonth : point.agemos <= 1,
 				annotation : entry.annotation,
@@ -1916,22 +1883,16 @@ Chart.prototype = {
 		 * Returns the period to show the gest. correction arrous in months
 		 * @param {Number} ga The current patient's gestationAge in months
 		 */
-		function getCorrectionMonths( ga ) {
-			var t = GC.App.getGestCorrectionDuration();
-			if ( t == "auto" ) {
-				// The correction is maintained for 1-2 years, as follows:
-				// - Until 1 year of age for premature born at 32-36 weeks gestation
-				// - Until 2 years of age for preemies born at less than 32 weeks gestation
-				ga = 40 + ga * GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH;
-				t = ga < 32 ? 2 : 1;
-			}
-			return GC.Util.floatVal(t) * 12;
+		function getCorrectionMonths( weeker ) {
+			return (weeker < GC.Preferences.prop("gestCorrectionTreshold") ? 
+				2 : 
+				1) * 12;
 		}
 		
 		var caFixed      = GC.App.getPatient().gestationAge, //GC.Util.intVal(GC.App.getCorrectionAge()),
-			correctUntil = getCorrectionMonths( caFixed ),
-			canDraw      = GC.App.getShowPretermArrows(),
-			arrowType    = GC.App.getGestCorrectionType(),
+			correctUntil = getCorrectionMonths( GC.App.getPatient().weeker ),
+			arrowType    = GC.chartSettings.gestCorrectionType,
+			canDraw      = arrowType != "none",
 			startX       = cfg.startX,
 			startY       = cfg.startY,
 			caDeclining,
@@ -1948,12 +1909,14 @@ Chart.prototype = {
 			x,
 			a2,
 			a3;
+			
+		caFixed = Math.min(0, (caFixed || 0) * -1);
 		
 		if ( caFixed && canDraw && cfg.curAgemos < correctUntil ) {
 			
 			caDeclining = caFixed - caFixed * (cfg.curAgemos / correctUntil);
-			xFixed      = this._scaleX( cfg.curAgemos + caFixed );
-			xDeclining  = this._scaleX( cfg.curAgemos + caDeclining );
+			xFixed      = this._scaleX( cfg.curAgemos + caFixed / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH );
+			xDeclining  = this._scaleX( cfg.curAgemos + caDeclining / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH );
 			
 			xDeclining = Math.min(Math.max(xDeclining, this.x), this.x + this.width);
 			xFixed     = Math.min(Math.max(xFixed    , this.x), this.x + this.width);
@@ -2114,32 +2077,6 @@ Chart.prototype = {
 				title  : cfg.point ? cfg.point.value : "error"*/
 			}).addClass("point")
 		);
-		
-		/*if (cfg.point) {
-			title = cfg.point.value + " " + sourceUnits;
-			if (currentMeasurementSystem != sourceMeasurementSystem) {
-				switch ( sourceUnits ) {
-					case "cm":
-						title += "\n" + GC.Util.roundToPrecision(
-							cfg.point.value * GC.Constants.METRICS.INCHES_IN_CENTIMETER,
-							2
-						) + " in";
-						title += "\n" + GC.Util.cmToUS(cfg.point.value);
-						break;
-					case "kg":
-						title += "\n" + GC.Util.roundToPrecision(
-							cfg.point.value * GC.Constants.METRICS.POUNDS_IN_KILOGRAM,
-							2
-						) + " lb";
-						title += "\n" + GC.Util.kgToUS(cfg.point.value);
-						break;
-				}
-			}
-		}
-		
-		if (title) {
-			set.attr("title", title);
-		}*/
 		
 		this._nodes.push(set);
 		

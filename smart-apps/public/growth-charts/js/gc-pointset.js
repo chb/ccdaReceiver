@@ -183,8 +183,9 @@ PointSet.prototype = {
 	 */
 	clip : function( minX, maxX, minY, maxY ) {
 		
-		if ( this._length < 1 ) 
+		if ( this._length < 1 ) {
 			return this;
+		}
 		
 		minX = GC.Util.floatVal( minX, Number.MIN_VALUE);
 		maxX = GC.Util.floatVal( maxX, Number.MAX_VALUE);
@@ -211,7 +212,7 @@ PointSet.prototype = {
 		this.forEach(function( entry, index, data ) {
 			if (index > 0) {
 				var prev = data[index - 1],
-					line = clipLine(
+					line = GC.Util.clipLine(
 						prev[x],
 						prev[y],
 						entry[x],
@@ -310,10 +311,12 @@ PointSet.prototype = {
 	 * @param n
 	 */
 	smooth : function(n) {
-		var newY = null, newX = null, qX, qY;
+		var newY = null, newX = null, qX, qY, i;
 		n = GC.Util.floatVal(n, 1);
-		if (n <= 0) return;
-		for (var i = 0; i < n; i++) {
+		if (n <= 0) {
+			return;
+		}
+		for (i = 0; i < n; i++) {
 			this.forEach(function( entry, index, data ) {
 				if ( index > 0 && index < this._length - 1 ) {
 					newY = (data[index-1][this.dimensionY] + 

@@ -1,5 +1,9 @@
-// Initialize the namespaces
-GC = window.GC || {};
+/* global Chart, GC, PointSet, Raphael, console, $,
+jQuery, debugLog,
+XDate, setTimeout, getDataSet*/
+
+/*jslint undef: true, eqeq: true, nomen: true, plusplus: true, forin: true*/
+var GC = window.GC || {};
 if (!GC.Util) {
     GC.Util = {};
 }
@@ -45,18 +49,19 @@ GC.Constants = {
 // =============================================================================
 
 // forEach
-if ( !Array.prototype.forEach ) {
-  Array.prototype.forEach = function(fn, scope) {
-  	var i, len = this.length;
-    for(i = 0; i < len; i++) {
-      fn.call(scope, this[i], i, this);
-    }
-  };
+if (!Array.prototype.forEach) {
+	Array.prototype.forEach = function(fn, scope) {
+		var i, len = this.length;
+		for ( i = 0; i < len; i++) {
+			fn.call(scope, this[i], i, this);
+		}
+	};
 }
+
 
 // indexOf
 if ( !Array.prototype.indexOf ) {
-	Array.prototype.indexOf = function (searchElement /*, fromIndex */ ) {
+	Array.prototype.indexOf = function (searchElement, fromIndex ) {
 		"use strict";
 		if (this == null) {
 			throw new TypeError();
@@ -78,8 +83,8 @@ if ( !Array.prototype.indexOf ) {
 		if (n >= len) {
 			return -1;
 		}
-		var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);
-		for (; k < len; k++) {
+		var k;
+		for (k = n >= 0 ? n : Math.max(len - Math.abs(n), 0); k < len; k++) {
 			if (k in t && t[k] === searchElement) {
 				return k;
 			}
@@ -98,8 +103,7 @@ if ( !Array.prototype.indexOf ) {
 	 *                         converted to float too.
 	 * @return {Number} The resulting floating point number.
 	 */
-	function floatVal( x, defaultValue ) 
-	{
+	function floatVal( x, defaultValue ) {
 		var out = parseFloat(x);
 		if ( isNaN(out) || !isFinite(out) ) {
 			out = defaultValue === undefined ? 0 : floatVal( defaultValue );
@@ -115,8 +119,7 @@ if ( !Array.prototype.indexOf ) {
 	 *                         converted to integer too.
 	 * @return {Number} The resulting integer.
 	 */
-	function intVal( x, defaultValue ) 
-	{
+	function intVal( x, defaultValue ) {
 		var out = parseInt(x, 10);
 		if ( isNaN(out) || !isFinite(out) ) {
 			out = defaultValue === undefined ? 0 : intVal( defaultValue );
@@ -133,15 +136,14 @@ if ( !Array.prototype.indexOf ) {
 	 *                         converted to integer too.
 	 * @return {Number} The resulting integer.
 	 */
-	function round( x, defaultValue )
-	{
+	function round( x, defaultValue ) {
 		return Math.round( floatVal( x, defaultValue ) );
 	}
 	
 	function roundToPrecision(n, precision) {
 		n = parseFloat(n);
 		if ( isNaN(n) || !isFinite(n) ) {
-			return Number.NaN;
+			return NaN;
 		}
 		if ( !precision || isNaN(precision) || !isFinite(precision) || precision < 1 ) {
 			return Math.round( n );
@@ -150,40 +152,331 @@ if ( !Array.prototype.indexOf ) {
 		return Math.round( n * q ) / q;
 	}
 	
+	// Output formatting
+	// =========================================================================
+	
+	function format(input, options) {
+		var cfg = $.extend({
+			type : ""
+		}, options);
+		
+		switch (String(cfg.type).toLowerCase()) {
+			case "height":
+			case "length":
+			case "stature" :
+			case "lengthandstature":
+				return format.cm(input, options);
+			case "headc" :
+				return format.headc(input, options);
+			case "weight":
+				return format.kg(input, options);
+			case "bmi":
+				return format.bmi(input, options);
+			case "percentile":
+				return format.percentile(input, options);
+			case "zscore":
+				return format.zscore(input, options);
+			case "dite":
+				return format.dite(input, options);
+			case "time":
+				return format.time(input, options);
+			case "duration":
+				return format.duration(input, options);
+		}
+		
+		return input;
+	}
+	
+	format.cm  = function(input, options) {
+		input = floatVal(input);
+		
+		var cfg = $.extend({
+			precision: GC.chartSettings.roundPrecision.length[GC.chartSettings.nicu ? "nicu" : "std"],
+			system   : GC.chartSettings.metrics,
+			cm       : "cm",
+			m        : "m",
+			inch     : "''",
+			foot     : "'",
+			separator: " ",
+			omitZero : true,
+			cmOnly   : true,
+			mOnly    : false,
+			inchOnly : false,
+			footOnly : false
+		}, options), out = [];
+		
+		if (cfg.system == "metric") {
+			
+			// Centimeters only
+			if (cfg.cmOnly) {
+				return roundToPrecision(input, cfg.precision) + cfg.cm;
+			}
+			
+			// Meters only
+			if (cfg.cmOnly) {
+				return roundToPrecision(input, cfg.precision) + cfg.m;
+			}
+			
+			var m   = Math.floor(input/100),
+				cm  = roundToPrecision(input - m * 100, cfg.precision);
+			
+			if (cm == 100) {
+				m++;
+				cm = 0;
+			}
+			
+			if (m > 0 || !cfg.omitZero) {
+				out.push(m + cfg.m);
+			}
+			
+			if (cm > 0 || !cfg.omitZero) {
+				out.push(cm + cfg.cm);
+			}
+			
+			return out.join(cfg.separator);
+		}
+		
+		// Inches only
+		if (cfg.inchOnly) {
+			return roundToPrecision(
+				input * GC.Constants.METRICS.INCHES_IN_CENTIMETER, 
+				cfg.precision
+			) + cfg.inch;
+		}
+		
+		// Feet only
+		if (cfg.footOnly) {
+			return roundToPrecision(
+				input * 100 * GC.Constants.METRICS.FOOTS_IN_METER, 
+				cfg.precision
+			) + cfg.foot;
+		}
+		
+		
+		var inches = input * GC.Constants.METRICS.INCHES_IN_CENTIMETER,
+			feet   = Math.floor(inches / 12);
+		
+		inches = roundToPrecision(inches - feet * 12, 0);
+		
+		if (inches == 12) {
+			feet++;
+			inches = 0;
+		}
+		
+		if (feet > 0 || !cfg.omitZero) {
+			out.push(feet + cfg.foot);
+		}
+		
+		if (inches > 0 || !cfg.omitZero) {
+			out.push(inches + cfg.inch);
+		}
+		
+		return out.join(cfg.separator);
+	};
+	
+	format.kg  = function(input, options) {
+		input = floatVal(input);
+		
+		var cfg = $.extend({
+			precision: GC.chartSettings.roundPrecision.weight[GC.chartSettings.nicu ? "nicu" : "std"],
+			system   : GC.chartSettings.metrics,
+			lb       : "lb",
+			oz       : "oz",
+			kg       : "kg",
+			g        : "g",
+			separator: " ",
+			omitZero : true,
+			gOnly    : false,
+			lbOnly   : false,
+			ozOnly   : false,
+			kgOnly   : true
+		}, options), out = [];
+		
+		if (cfg.system == "metric") {
+			
+			// Kilograms only
+			if (cfg.kgOnly) {
+				return roundToPrecision(input, cfg.precision) + cfg.kg;
+			}
+			
+			// Grams only
+			if (cfg.kgOnly) {
+				return roundToPrecision(input * 1000, cfg.precision) + cfg.g;
+			}
+			
+			// Kilograms and grams
+			var kg  = Math.floor(input),
+				gr  = roundToPrecision((input - kg) * 1000, cfg.precision);
+				
+			if (gr == 1000) {
+				kg++;
+				gr = 0;
+			}
+			
+			if (kg > 0 || !cfg.omitZero) {
+				out.push(kg + cfg.kg);
+			}
+			
+			if (gr > 0 || !cfg.omitZero) {
+				out.push(gr + cfg.g);
+			}
+			
+			return out.join(cfg.separator);
+		}
+		
+		// Pounds only
+		if (cfg.lbOnly) {
+			return roundToPrecision(
+				input * GC.Constants.METRICS.POUNDS_IN_KILOGRAM, 
+				cfg.precision
+			) + cfg.lb;
+		}
+		
+		// Ounces only
+		if (cfg.ozOnly) {
+			return roundToPrecision(
+				input * GC.Constants.METRICS.POUNDS_IN_KILOGRAM * 16, 
+				cfg.precision
+			) + cfg.oz;
+		}
+		
+		var ounces = input * GC.Constants.METRICS.POUNDS_IN_KILOGRAM * 16,
+			pounds = Math.floor(ounces / 16);
+		
+		ounces = roundToPrecision(ounces - pounds * 16, 0);
+		
+		if (ounces == 16) {
+			pounds++;
+			ounces = 0;
+		}
+		
+		if (pounds > 0 || !cfg.omitZero) {
+			out.push(pounds + cfg.lb);
+		}
+		
+		if (ounces > 0 || !cfg.omitZero) {
+			out.push(ounces + cfg.oz);
+		}
+		
+		return out.join(cfg.separator);
+	};
+	
+	format.bmi = function(input, options) {
+		var cfg = $.extend({
+			precision: GC.chartSettings.roundPrecision.bmi[GC.chartSettings.nicu ? "nicu" : "std"],
+			system   : GC.chartSettings.metrics,
+			unitMetric : "kg/m2",
+			initImp    : "lb/ft2x703"
+		}, options);
+		return roundToPrecision(floatVal(input), cfg.precision) + (
+			cfg.system == "metric" ? cfg.unitMetric : cfg.initImp
+		);
+	};
+	
+	format.headc = function(input, options) {
+		return format.cm(input, $.extend({
+			cmOnly   : true,
+			inchOnly : true,
+			precision: GC.chartSettings.roundPrecision.headc[GC.chartSettings.nicu ? "nicu" : "std"]
+		}, options));
+	};
+	
+	format.percentile = function(input, options) {
+		var cfg = $.extend({
+			precision: GC.chartSettings.roundPrecision.percentile[GC.chartSettings.nicu ? "nicu" : "std"],
+			pct : "%"
+		}, options);
+		return roundToPrecision(floatVal(input), cfg.precision) + cfg.pct;
+	};
+	
+	format.zscore = function(input, options) {
+		var cfg = $.extend({
+			precision: GC.chartSettings.roundPrecision.zscore[GC.chartSettings.nicu ? "nicu" : "std"],
+			z : "z"
+		}, options);
+		return roundToPrecision(floatVal(input), cfg.precision) + cfg.z;
+	};
+	
+	format.dite = function(input, format) {
+		return new XDate(input).toString(format || GC.chartSettings.dateFormat);
+	};
+	
+	format.time = function(input, format) {
+		return new XDate(input).toString(format || GC.chartSettings.timeFormat);
+	};
+	
+	format.duration = function(input, options) {
+	
+	};
+	
+	
+	format.lengthVelocity = function(input, options) {
+		var cfg = $.extend({
+			denominator : 1,
+			system   : GC.chartSettings.metrics,
+			cm       : "cm",
+			m        : "m",
+			inch     : "''",
+			foot     : "'",
+			separator: " ",
+			omitZero : true,
+			cmOnly   : false,
+			mOnly    : false,
+			inchOnly : false,
+			footOnly : false
+		}, options);
+	};
+	
+	////////////////////////////////////////////////////////////////////////////
+	
 	function cmToUS( cm, ft, inch ) {
 		var inches = floatVal( cm ) * GC.Constants.METRICS.INCHES_IN_CENTIMETER;
 		var feet   = Math.floor(inches / 12);
 		inches     = Math.round(inches - feet * 12);
-		ft   = ft   == undefined ? "ft" : ft;
-		inch = inch == undefined ? "in" : inch;
+		ft   = ft   === undefined ? "ft" : ft;
+		inch = inch === undefined ? "in" : inch;
 		return feet + ft + " " + inches + inch;
 	}
 	
-	function kgToUS( kg, lb, oz ) {
-		var pounds = floatVal( kg ) * GC.Constants.METRICS.KILOGRAMS_IN_POUND;
+	function kgToUS( kg, lb, oz, separator ) {
+		var pounds = floatVal( kg ) * GC.Constants.METRICS.POUNDS_IN_KILOGRAM;
 		var ounces = pounds * 16;
 		pounds     = Math.floor( pounds );
-		ounces    -= pounds * 16;
-		lb = lb == undefined ? "lb" : lb;
-		oz = oz == undefined ? "oz" : oz;
+		ounces     = Math.round(ounces - pounds * 16);
 		
-		return pounds + lb + " " + Math.round(ounces) + oz;
+		if (ounces == 16) {
+			pounds++;
+			ounces = 0;
+		}
+		
+		lb = lb === undefined ? "lb" : lb;
+		oz = oz === undefined ? "oz" : oz;
+		
+		var out = pounds + lb;
+		
+		if (ounces) {
+			out += (separator || " ") + ounces + oz;
+		}
+		
+		return out;
+	}
+	
+	function bmiToUS(bmi, lb, oz, separator) {
+		return bmi + "lb/ft2x703";
 	}
 	
 	/**
 	 * Inheritance without calling the parent constructor
 	 */
-	function extend( base, child )
-	{
+	function extend( base, child ) {
 		var F = function() {};
 		F.prototype = base.prototype;
 		F.prototype.constructor = F;
-		child.prototype = new F;
+		child.prototype = new F();
 	}
 
 	
-	function TaskQueue( options ) 
-	{
+	function TaskQueue( options ) {
 		var cfg = $.extend({
 			onChange   : $.noop,
 			onComplete : $.noop
@@ -224,7 +517,7 @@ if ( !Array.prototype.indexOf ) {
 		return function() {
 			return "uid_" + n++;
 		};
-	})();
+	}());
 	
 	// Color Functions 
 	
@@ -235,21 +528,19 @@ if ( !Array.prototype.indexOf ) {
 			   0.0722 * (_c.b/255);
 	}
 	
-	function mixColors(c1, c2, q) 
-	{
+	function mixColors(c1, c2, q) {
 		q = Math.min(Math.max(floatVal(q, 0.5), 0), 1);
+		c1 = Raphael.getRGB(c1);
+		c2 = Raphael.getRGB(c2);
 		
-		var c1 = Raphael.getRGB(c1),
-			c2 = Raphael.getRGB(c2),
-			q1  = q,
+		var q1  = q,
 			q2  = 1 - q;
 		return "rgb("   + round(c1.r * q1 + c2.r * q2) + 
 					"," + round(c1.g * q1 + c2.g * q2) + 
 					"," + round(c1.b * q1 + c2.b * q2) + ")";
 	}
 	
-	function brighten(c, n)
-	{
+	function brighten(c, n) {
 		var _c = Raphael.getRGB(c);
 		if (_c.error) {
 			return c;
@@ -261,8 +552,7 @@ if ( !Array.prototype.indexOf ) {
 					"," + round(_c.b + ( 255 - _c.b ) * _n) + ")";
 	}
 	
-	function darken(c, n)
-	{
+	function darken(c, n) {
 		var _c = Raphael.getRGB(c);
 		if (_c.error) {
 			return c;
@@ -353,25 +643,19 @@ if ( !Array.prototype.indexOf ) {
 		return closest;
 	}
 	
-	NS.Util.floatVal   = floatVal;
-	NS.Util.intVal     = intVal;
-	NS.Util.round      = round;
-	NS.Util.TaskQueue  = TaskQueue;
-	NS.Util.luma       = luma;
-	NS.Util.mixColors  = mixColors;
-	NS.Util.brighten   = brighten;
-	NS.Util.darken     = darken;
-	NS.Util.uid        = uid;
-	NS.Util.extend     = extend;
-	NS.Util.cmToUS     = cmToUS;
-	NS.Util.kgToUS     = kgToUS;
-	NS.Util.arrayCeil  = arrayCeil;
-	NS.Util.arrayFloor = arrayFloor;
-	NS.Util.roundToPrecision = roundToPrecision;
-	NS.Util.readableColor = readableColor;
-	NS.Util.cDateFormatToJqFormat = cDateFormatToJqFormat;
+	function parseTemplate(tpl, data) {
+		if (!data || $.isEmptyObject(data)) {
+			return tpl;
+		}
+		var out = tpl, reg, any = new RegExp("#.*?#", "g");
+		$.each(data, function(i, o) {
+			var reg = new RegExp("#" + i + "#", "g");
+			out = out.replace(reg, o);
+		});
+		return out.replace(any, "");
+	}
 	
-	NS.Util.createProperty = function( obj, cfg ) {
+	function createProperty( obj, cfg ) {
 		var UCName     = cfg.name.charAt(0).toUpperCase() + cfg.name.substr(1);
 		var getterName = "get" + UCName;
 		var setterName = "set" + UCName;
@@ -384,9 +668,11 @@ if ( !Array.prototype.indexOf ) {
 				}
 				else if ( cfg.inputName ) {
 					var input = $("[name='" + cfg.inputName + "']");
-					_value = input[0].type == "checkbox" || input[0].type == "radio" ? 
-						input[0].checked :
-						input.val();
+					if (input[0]) {
+						_value = input[0].type == "checkbox" || input[0].type == "radio" ? 
+							input[0].checked :
+							input.val();
+					}
 				}
 			}
 			return _value;
@@ -433,9 +719,9 @@ if ( !Array.prototype.indexOf ) {
 				});
 			});
 		}
-	};
+	}
 
-	NS.Util.createMethod = function( obj, cfg ) {
+	function createMethod( obj, cfg ) {
 		var enablerName = "can" + cfg.name.charAt(0).toUpperCase() + cfg.name.substr(1);
 		
 		if ( cfg.enabler ) {
@@ -448,15 +734,12 @@ if ( !Array.prototype.indexOf ) {
 			}
 			return this;
 		};
-		
-	};
-	
+	}
 	
 	/**
 	 * Class Point
 	 */ 
-	function Point( x, y, data ) 
-	{
+	function Point( x, y, data ) {
 		this.x    = x;
 		this.y    = y;
 		this.data = data;
@@ -465,8 +748,7 @@ if ( !Array.prototype.indexOf ) {
 	/**
 	 * Class Rect
 	 */
-	function Rect( x1, y1, x2, y2, x3, y3, x4, y4 ) 
-	{
+	function Rect( x1, y1, x2, y2, x3, y3, x4, y4 ) {
 		if ( arguments.length == 8 ) {
 			this.pA = new Point( x1, y1 );
 			this.pB = new Point( x2, y2 );
@@ -481,815 +763,492 @@ if ( !Array.prototype.indexOf ) {
 	}
 	
 	/**
-	 * Class Collection
+	 * Uses the Cohen/Sutherland algorithm ported to JavaScript from the C++ example
+	 * given here http://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
 	 */
-	function Collection()
-	{
-		this._items = [];
-		this._length = 0;
-	}
-	
-	Collection.prototype.add = function( item )
-	{
-		this._length = this._items.push( item );
-		return this;
-	};
-	
-	Collection.prototype.forEach = function( callback )
-	{
-		return $.each( this._items, callback );
-	};
-	
-	
-	/**
-	 * Class PointSet extends Collection 
-	 * Basically just an array of points
-	 */
-	extend( Collection, PointSet );
-	function PointSet()
-	{
-		this._items = [];
-		this._length = 0;
-	}
-	
-	PointSet.prototype.getMaxPoint = function( direction )
-	{
-		var out;
-		this.forEach(function(i, point) {
-			switch ( direction ) {
-				case GC.Constants.DIRECTION.TOP:
-					if (!out || out.y < point.y) out = point;
-					break;
-				case GC.Constants.DIRECTION.RIGHT:
-					if (!out || out.x < point.x) out = point;
-					break;
-				case GC.Constants.DIRECTION.BOTTOM:
-					if (!out || out.y > point.y) out = point;
-					break;
-				case GC.Constants.DIRECTION.LEFT:
-					if (!out || out.x > point.x) out = point;
-					break;
+	function clipLine( x0, y0, x1, y1, minX, maxX, minY, maxY ) {
+	 
+		var INSIDE = 0; // 0000
+		var LEFT   = 1; // 0001
+		var RIGHT  = 2; // 0010
+		var BOTTOM = 4; // 0100
+		var TOP    = 8; // 1000
+		
+		// Compute the bit code for a point (x, y) using the clip rectangle
+		// bounded diagonally by (minX, minY), and (maxX, maxY)
+		function computeOutCode( x, y ) {
+			var code = INSIDE;      // initialised as being inside of clip window
+
+			if (x < minX) {          // to the left of clip window
+				code |= LEFT;
+			} else if (x > maxX) {     // to the right of clip window
+				code |= RIGHT;
+			} if (y < minY) {          // below the clip window
+				code |= BOTTOM;
+			} else if (y > maxY) {      // above the clip window
+				code |= TOP;
 			}
-		}); 
-		return out;
-	};
+			return code;
+		}
+
+		// Cohen/Sutherland clipping algorithm clips a line from
+		// P0 = (x0, y0) to P1 = (x1, y1) against a rectangle with 
+		// diagonal from (minX, minY) to (maxX, maxY).
+		function cohenSutherlandLineClip( x0, y0, x1, y1 )
+		{
+			// compute outcodes for P0, P1, and whatever point lies outside the clip rectangle
+			var outcode0 = computeOutCode(x0, y0);
+			var outcode1 = computeOutCode(x1, y1);
+			var accept   = false;
+
+			while (true) {
+				if (!(outcode0 | outcode1)) { // Bitwise OR is 0. Trivially accept and get out of loop
+					accept = true;
+					break;
+				} else if (outcode0 & outcode1) { // Bitwise AND is not 0. Trivially reject and get out of loop
+					break;
+				} else {
+					// failed both tests, so calculate the line segment to clip
+					// from an outside point to an intersection with clip edge
+					var x, y;
+
+					// At least one endpoint is outside the clip rectangle; pick it.
+					var outcodeOut = outcode0 || outcode1;
+
+					// Now find the intersection point;
+					// use formulas y = y0 + slope * (x - x0), 
+					//              x = x0 + (1 / slope) * (y - y0)
+					if (outcodeOut & TOP) {           // point is above the clip rectangle
+						x = x0 + (x1 - x0) * (maxY - y0) / (y1 - y0);
+						y = maxY;
+					} else if (outcodeOut & BOTTOM) { // point is below the clip rectangle
+						x = x0 + (x1 - x0) * (minY - y0) / (y1 - y0);
+						y = minY;
+					} else if (outcodeOut & RIGHT) {  // point is to the right of clip rectangle
+						y = y0 + (y1 - y0) * (maxX - x0) / (x1 - x0);
+						x = maxX;
+					} else /*if (outcodeOut & LEFT)*/ {   // point is to the left of clip rectangle
+						y = y0 + (y1 - y0) * (minX - x0) / (x1 - x0);
+						x = minX;
+					}
+					
+					// Now we move outside point to intersection point to clip
+					// and get ready for next pass.
+					if (outcodeOut == outcode0) {
+						x0 = x;
+						y0 = y;
+						outcode0 = computeOutCode(x0, y0);
+					} else {
+						x1 = x;
+						y1 = y;
+						outcode1 = computeOutCode(x1, y1);
+					}
+				}
+			}
+
+			return accept ? [ x0, y0, x1, y1 ] : false;
+		}
+		
+		return cohenSutherlandLineClip( x0, y0, x1, y1 );
+	}
 	
-	PointSet.prototype.getBox = function() 
-	{
-		return new Rect( 
-			this.getMaxPoint( GC.Constants.DIRECTION.LEFT   ).x,
-			this.getMaxPoint( GC.Constants.DIRECTION.TOP    ).y,
-			this.getMaxPoint( GC.Constants.DIRECTION.RIGHT  ).x,
-			this.getMaxPoint( GC.Constants.DIRECTION.BOTTOM ).y
+	function getLineYatX( line, x ) {
+		var len         = line.length,
+			pointBefore = null,
+			pointAfter  = null,
+			point, j;
+		
+		for ( j = 0; j < len; j++ ) {
+			point = line[j];
+			
+			if ( point[0] < x ) {
+				if ( !pointBefore || pointBefore[0] <= point[0] ) {
+					pointBefore = [ point[0], point[1] ];
+				}
+			}
+			
+			if ( point[0] > x ) {
+				if ( !pointAfter || pointAfter[0] >= point[0] ) {
+					pointAfter = [ point[0], point[1] ];
+				}
+			}
+		}
+		
+		if (!pointBefore) {
+			pointBefore = line[0];
+		}
+		if (!pointAfter) {
+			pointAfter = line[len - 1];
+		}
+		return GC.Util.getYatX( 
+			x, 
+			pointBefore[0], 
+			pointBefore[1], 
+			pointAfter[0], 
+			pointAfter[1] 
 		);
-	};
-
-	
-	
-	/**
-	 * Class Line extends PointSet
-	 */
-	extend( PointSet, Line );
-	function Line( points )
-	{
-		if ( !(this instanceof Line) ) {
-			return new Line( points );
-		}
-		
-		if ( $.isArray(points) ) {
-			return Line.fromArray( points );
-		}
-		
-		this.points  = [];
-		this._length = 0;
-	}
-	
-	/**
-	 * Creates new line from an array of points like 
-	 * [ [x, y, data], [x, y, data] ... ]
-	 * @return {Line}
-	 * @static
-	 */
-	Line.fromArray = function( arr ) {
-		var line = new Line();
-		$.each(arr, function(i, point) {
-			line.points[i] = {
-				x    : point[0],
-				y    : point[1],
-				data : point[2]
-			};
-		});
-		return line;
-	};
-	
-	/**
-	 * Converts the line to array of array points like 
-	 * [ [p1.x, p1.y, p1.data], [p2.x, p2.y, p2.data] ... ]
-	 * @return {Array}
-	 */
-	Line.prototype.toArray = function() {
-		var out = [];
-		$.each(this.points, function(i, point) {
-			out[i] = [ point.x, point.y, point.data ];
-		});
-		return out;
-	};
-	
-	Line.prototype.clipRect = function( minX, maxX, minY, maxY ) {
-		
-	};
-	
-	Line.prototype.getMinX = function() {
-		
-	};
-	Line.prototype.getMaxX = function() {
-		
-	};
-	Line.prototype.getMinY = function() {
-		
-	};
-	Line.prototype.getMaxY = function() {
-		
-	};
-	Line.prototype.getSublineAtX = function() {
-	
-	};
-	
-
-	NS.Point      = Point;
-	NS.Rect       = Rect;
-	NS.Collection = Collection;
-	NS.PointSet   = PointSet;
-	NS.Line       = Line;
-	
-})(GC);
-
-
-
-/**
-* Returns the decimal representation of the years difference between d1 and d2
-*
-* @param {String} d1 Date string for the first date
-* @param {String} d2 Date string for the second date
-*
-* @returns {Number} A decimal number representing the years difference
-*/
-var years_apart = function(d1, d2) {
-
-    // Parse the dates
-    d1 = parse_date(d1);
-    d2 = parse_date(d2);
-    
-    // The diffYears method in XDate returns the years difference as
-    // a decimal fraction
-    var res = d1.diffYears(d2) ; 
-    
-    // The difference should always be a positive number
-    return Math.abs(res);
-};
-
-/**
-* Returns the age at a given date with respect to the birth date
-*
-* @param {String} date Date string for the current date
-* @param {String} birthDate Date string for the birthday
-*
-* @returns {Number} The age
-*/
-var getAge = function  (date, birthDate) {
-    // Based on http://stackoverflow.com/questions/4060004/calculate-age-in-javascript (2012-03-29)
-
-    var d1 = parse_date(date);
-    var d2 = parse_date(birthDate);
-    
-    var age = d1.getFullYear() - d2.getFullYear();
-    var m = d1.getMonth() - d2.getMonth();
-    
-    if (m < 0 || (m === 0 && d1.getDate() < d2.getDate())) {
-        age--;
-    }
-    
-    return age;
-};
-
-/**
-* Wrapper for dates parsing
-*/
-var parse_date = function(d) {
-    return new XDate(d);
-};
-
-// =============================================================================
-// Global functions that are just temporary here!
-// =============================================================================
-
-
-
-
-
-
-// Class Line extends PointSet
-// =============================================================================
-
-
-
-// =============================================================================
-
-/**
- * Uses the Cohen�Sutherland algorithm ported to JavaScript from the C++ example
- * given here http://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
- */
-function clipLine( x0, y0, x1, y1, minX, maxX, minY, maxY ) {
- 
-	var INSIDE = 0; // 0000
-	var LEFT   = 1; // 0001
-	var RIGHT  = 2; // 0010
-	var BOTTOM = 4; // 0100
-	var TOP    = 8; // 1000
-	
-	// Compute the bit code for a point (x, y) using the clip rectangle
-	// bounded diagonally by (minX, minY), and (maxX, maxY)
-	function computeOutCode( x, y ) {
-		var code = INSIDE;      // initialised as being inside of clip window
-
-		if (x < minX)           // to the left of clip window
-			code |= LEFT;
-		else if (x > maxX)      // to the right of clip window
-			code |= RIGHT;
-		if (y < minY)           // below the clip window
-			code |= BOTTOM;
-		else if (y > maxY)      // above the clip window
-			code |= TOP;
-
-		return code;
 	}
 
-	// Cohen�Sutherland clipping algorithm clips a line from
-	// P0 = (x0, y0) to P1 = (x1, y1) against a rectangle with 
-	// diagonal from (minX, minY) to (maxX, maxY).
-	function cohenSutherlandLineClip( x0, y0, x1, y1 )
-	{
-		// compute outcodes for P0, P1, and whatever point lies outside the clip rectangle
-		var outcode0 = computeOutCode(x0, y0);
-		var outcode1 = computeOutCode(x1, y1);
-		var accept   = false;
-
-		while (true) {
-			if (!(outcode0 | outcode1)) { // Bitwise OR is 0. Trivially accept and get out of loop
-				accept = true;
-				break;
-			} else if (outcode0 & outcode1) { // Bitwise AND is not 0. Trivially reject and get out of loop
-				break;
-			} else {
-				// failed both tests, so calculate the line segment to clip
-				// from an outside point to an intersection with clip edge
-				var x, y;
-
-				// At least one endpoint is outside the clip rectangle; pick it.
-				var outcodeOut = outcode0 ? outcode0 : outcode1;
-
-				// Now find the intersection point;
-				// use formulas y = y0 + slope * (x - x0), 
-				//              x = x0 + (1 / slope) * (y - y0)
-				if (outcodeOut & TOP) {           // point is above the clip rectangle
-					x = x0 + (x1 - x0) * (maxY - y0) / (y1 - y0);
-					y = maxY;
-				} else if (outcodeOut & BOTTOM) { // point is below the clip rectangle
-					x = x0 + (x1 - x0) * (minY - y0) / (y1 - y0);
-					y = minY;
-				} else if (outcodeOut & RIGHT) {  // point is to the right of clip rectangle
-					y = y0 + (y1 - y0) * (maxX - x0) / (x1 - x0);
+	function getLineXatY( line, y ) {
+		var len         = line.length,
+			pointBefore = null,
+			pointAfter  = null,
+			point, j;
+		
+		for ( j = 0; j < len; j++ ) {
+			point = line[j];
+			
+			if ( point[1] < y ) {
+				if ( !pointBefore || pointBefore[1] <= point[1] ) {
+					pointBefore = [ point[0], point[1] ];
+				}
+			}
+			
+			if ( point[1] > y ) {
+				if ( !pointAfter || pointAfter[1] >= point[1] ) {
+					pointAfter = [ point[0], point[1] ];
+				}
+			}
+		}
+		
+		if (!pointBefore) {
+			pointBefore = line[0];
+		}
+		if (!pointAfter) {
+			pointAfter = line[len - 1];
+		}
+		return GC.Util.getXatY( y, pointBefore[0], pointBefore[1], pointAfter[0], pointAfter[1] );
+	}
+	
+	function getLinesMinDistanceY( l1, l2, precision ) {
+		precision = Math.abs( GC.Util.round( precision, 10 ) );
+		
+		var len1 = l1.length,
+			len2 = l2.length;
+		
+		if ( len1 > 1 && len2 > 1 ) {
+			
+			var range1   = findMinMax(l1, 0),
+				range2   = findMinMax(l2, 0),
+				minX     = Math.min(range1.min, range2.min),
+				maxX     = Math.max(range1.max, range2.max),
+				range    = maxX - minX,
+				step     = range / (precision + 1),
+				distance = Number.MAX_VALUE,
+				d,
+				x, 
+				y1, y2, p1 = new GC.Point(), p2 = new GC.Point(), points = [];
+			
+			for ( x = minX; x < maxX + step; x += step ) {
+				
+				var exit = false;
+				if (x > maxX) {
 					x = maxX;
-				} else /*if (outcodeOut & LEFT)*/ {   // point is to the left of clip rectangle
-					y = y0 + (y1 - y0) * (minX - x0) / (x1 - x0);
-					x = minX;
+					exit = true;
 				}
 				
-				// Now we move outside point to intersection point to clip
-				// and get ready for next pass.
-				if (outcodeOut == outcode0) {
-					x0 = x;
-					y0 = y;
-					outcode0 = computeOutCode(x0, y0);
-				} else {
-					x1 = x;
-					y1 = y;
-					outcode1 = computeOutCode(x1, y1);
+				y1 = getLineYatX(l1, x);
+				y2 = getLineYatX(l2, x);
+				d  = Math.abs(y2 - y1);
+				if ( d <= distance ) {
+					distance = d;
+					p1.x = x;
+					p1.y = y1;
+					p2.x = x;
+					p2.y = y2;
 				}
-			}
-		}
-
-		return accept ? [ x0, y0, x1, y1 ] : false;
-	}
-	
-	return cohenSutherlandLineClip( x0, y0, x1, y1 );
-}
-
-
-function getLineYatX( line, x ) {
-	var len         = line.length,
-		pointBefore = null,
-		pointAfter  = null,
-		point, j;
-	
-	for ( j = 0; j < len; j++ ) {
-		point = line[j];
-		
-		if ( point[0] < x ) {
-			if ( !pointBefore || pointBefore[0] <= point[0] ) {
-				pointBefore = [ point[0], point[1] ];
-			}
-		}
-		
-		if ( point[0] > x ) {
-			if ( !pointAfter || pointAfter[0] >= point[0] ) {
-				pointAfter = [ point[0], point[1] ];
-			}
-		}
-	}
-	
-	if (!pointBefore)
-		pointBefore = line[0];
-	
-	if (!pointAfter)
-		pointAfter = line[len - 1];
-	
-	return getYatX( x, pointBefore[0], pointBefore[1], pointAfter[0], pointAfter[1] );
-}
-
-function getLineXatY( line, y ) {
-	var len         = line.length,
-		pointBefore = null,
-		pointAfter  = null,
-		point, j;
-	
-	for ( j = 0; j < len; j++ ) {
-		point = line[j];
-		
-		if ( point[1] < y ) {
-			if ( !pointBefore || pointBefore[1] <= point[1] ) {
-				pointBefore = [ point[0], point[1] ];
-			}
-		}
-		
-		if ( point[1] > y ) {
-			if ( !pointAfter || pointAfter[1] >= point[1] ) {
-				pointAfter = [ point[0], point[1] ];
-			}
-		}
-	}
-	
-	if (!pointBefore)
-		pointBefore = line[0];
-	
-	if (!pointAfter)
-		pointAfter = line[len - 1];
-	
-	return getXatY( y, pointBefore[0], pointBefore[1], pointAfter[0], pointAfter[1] );
-}
-
-function getLinesMinDistanceY( l1, l2, precision )
-{
-	precision = Math.abs( GC.Util.round( precision, 10 ) );
-	
-	var len1 = l1.length,
-		len2 = l2.length;
-	
-	if ( len1 > 1 && len2 > 1 ) {
-		
-		var range1   = findMinMax(l1, 0),
-			range2   = findMinMax(l2, 0),
-			minX     = Math.min(range1.min, range2.min),
-			maxX     = Math.max(range1.max, range2.max),
-			range    = maxX - minX,
-			step     = range / (precision + 1),
-			distance = Number.MAX_VALUE,
-			d,
-			x, 
-			y1, y2, p1 = new GC.Point(), p2 = new GC.Point(), points = [];
-		
-		for ( x = minX; x < maxX + step; x += step ) {
-			
-			var exit = false;
-			if (x > maxX) {
-			    x = maxX;
-			    exit = true;
-			}
-			
-			y1 = getLineYatX(l1, x);
-			y2 = getLineYatX(l2, x);
-			d  = Math.abs(y2 - y1);
-			if ( d <= distance ) {
-				distance = d;
-				p1.x = x;
-				p1.y = y1;
-				p2.x = x;
-				p2.y = y2;
-			}
-			points.push([x, y1], [x, y2]);
-			
-			if (exit) {
-			    break;
-			}
-		}
-		
-		return { 
-			distance : distance, 
-			p1       : p1, 
-			p2       : p2, 
-			points   : points 
-		};
-	}
-}
-
-function sumLinesY(l1, l2, method, precision)
-{
-	precision = Math.abs( GC.Util.round( precision, 50 ) );
-	
-	var len1 = l1.length,
-		len2 = l2.length,
-		out  = [];
-	
-	if ( len1 > 1 && len2 > 1 ) {
-		
-		var range1   = findMinMax(l1, 0),
-			range2   = findMinMax(l2, 0),
-			minX     = Math.min(range1.min, range2.min),
-			maxX     = Math.max(range1.max, range2.max),
-			range    = maxX - minX,
-			step     = range / (precision + 1),
-			x;
-			
-		for ( x = minX; x < maxX; x = Math.min(x + step, maxX) ) {
-			
-			if ( x < Math.max(range1.min, range2.min) ) {
-				out.push([ 
-					x, 
-					l1[0][0] < l2[0][0] ? getLineYatX(l1, x) : getLineYatX(l2, x)
-				]);
-			}
-			else if ( x > Math.min( range1.max, range2.max ) ) {
-				out.push([ 
-					x, 
-					range1.max > range2.max ? getLineYatX(l1, x) : getLineYatX(l2, x)
-				]);
-			}
-			else {
-				out.push([ x, Math[method](getLineYatX(l1, x), getLineYatX(l2, x)) ]);
-			}	
-		}
-	}
-	
-	return out;
-}
-
-function lineToCurve( line ) {
-	var len = line.length;
-	
-	if ( len < 3 ) {
-		return line;
-	}
-	
-	var out = ["M" + line[0][0] + "," + line[0][1]],
-		pointBefore,
-		pointAfter,
-		i;
-	
-	for ( i = 1; i < len - 1; i++ ) {
-		pointBefore = line[ i - 1 ];
-		pointAfter  = line[ i + 1 ];
-		
-		out.push("S" + pointBefore.join(",") + "," + pointAfter.join(","));
-	}
-	
-	return out;
-}
-
-function months2weeks( m ) 
-{
-	return GC.Util.floatVal( m ) * GC.Constants.TIME_INTERVAL.DAYS_IN_MONTH / GC.Constants.TIME_INTERVAL.DAYS_IN_WEEK;
-}
-
-function weeks2months( w )
-{
-	return GC.Util.floatVal( w ) * GC.Constants.TIME_INTERVAL.DAYS_IN_WEEK / GC.Constants.TIME_INTERVAL.DAYS_IN_MONTH;
-}
-	
-function concatLMSDataSources( src1, src2 ) {
-	var name = src1 + "_+_" + src2;
-	if ( !GC.DATA_SETS.hasOwnProperty(name) ) {
-		var data1 = GC.DATA_SETS[src1].data,
-			data2 = GC.DATA_SETS[src2].data,
-			l1, l2, last, i, gender = null, out = $.extend({}, GC.DATA_SETS[src1]);
-		
-		for ( gender in data1 ) {
-			if ( gender in data2 ) {
-				l1 = data1[gender].length;
-				l2 = data2[gender].length;
-				last = data1[gender][l1 - 1];
-				for ( i = 0; i < l2; i++ ) {
-					if ( data2[gender][i].Agemos > last.Agemos ) {
-						out.data[gender].push($.extend({}, data2[gender][i]));
-					}
-				}
-			}
-		}
-		GC.DATA_SETS[name] = out;
-	}
-	return name;
-}
-
-function concatPointsDataSources( src1, src2 ) {
-	var name = src1 + "_+_" + src2;
-	if ( !GC.DATA_SETS.hasOwnProperty(name) ) {
-		var data1 = GC.DATA_SETS[src1].data,
-			data2 = GC.DATA_SETS[src2].data,
-			l1, l2, last, i, gender = null, out = $.extend({}, GC.DATA_SETS[src1]);
-		
-		for ( gender in data1 ) {
-			for ( var label in data1[gender] ) {
-				l1 = data1[gender][label].length;
-				l2 = data2[gender][label].length;
-				last = data1[gender][label][l1 - 1];
-				for ( i = 0; i < l2; i++ ) {
-					if ( data2[gender][label][i].Agemos > last.Agemos ) {
-						out.data[gender][label].push($.extend({}, data2[gender][label][i]));
-					}
-				}
-			}
-		}
-		GC.DATA_SETS[name] = out;
-	}
-	return name;
-}
-	
-function findMinMax(arr, el) 
-{
-	var len = arr.length;
-	if (!len) {
-		return { min: 0, max : 0 };
-	}
-	var res = { min: arr[0][el], max: arr[0][el] };
-	
-	if (len > 1) {
-		for ( var i = len - 1; i >= 0; i-- ) {
-			if (arr[i][el] < res.min) res.min = arr[i][el];
-			if (arr[i][el] > res.max) res.max = arr[i][el];
-		}
-	}
-	return res;
-}
-
-function getYatX( x, p1x, p1y, p2x, p2y ) 
-{
-	if (p1y === p2y) return p1y;
-	if (p1x === p2x) return (p1y + p2y) / 2;
-	var a = p1y - p2y, b = p2x - p1x;
-	return p1y - a * (x - p1x)/b;
-}
-
-function getXatY( y, p1x, p1y, p2x, p2y ) 
-{
-	// x = x0 + (1 / slope) * (y - y0)
-	//var x = p1x + (1 / (p2x - p1x)) * (y - p1y);
-	var x = p1x + (p2x - p1x) * (y - p1y) / (p2y - p1y);
-	return x;
-	
-	if (p1x === p2x) return p1x;
-	if (p1y === p2y) return (p1x + p2x) / 2;
-	var a = p1y - p2y, b = p2y - p1y;
-	return p1x - b * (y - p1y)/b;
-}
-
-/**
- * The data returned by getCurvesData() usually contains extra entries 
- * for each line. It has the last point before the current start age (if
- * the start age is greather then 0) and the first point after the end 
- * age (if such point exists). Now that data must be "cropped to the 
- * chart dimensions"
- */
-function cropCurvesDataX( data, minX, maxX ) 
-{
-	
-	var len = data.length, i, ps;
-	if ( len > 1 ) {
-		for ( i = 0; i < len; i++ ) {
-			ps = new PointSet( data[i].data, "x", "y" );
-			ps.limitDensity(80);
-			ps.clip(minX, maxX);
-			//ps.smooth(3);
-			
-			data[i].data = ps._data;
-			ps = null;
-		}
-	}
-	return data;
-}
-
-/**
- * Same as cropCurvesDataX() but crops the patient pints data which is single 
- * line (one level array), the "x" property is called "agemos" and the "y" 
- * property is called "value".
- */
-function cropPatientDataX( data, minX, maxX, minY, maxY )
-{
-	var l = data.length, i, point, 
-		croppedBefore, 
-		croppedAfter, 
-		croppedAbove, 
-		croppedBelow, 
-		lastPoint,
-		out = [];
-		
-	if ( l > 1 ) {
-		for ( i = 0; i < l; i++ ) {
-			point = $.extend({}, data[i]);
-			point.overflow = data[i].value > maxY || data[i].value < minY
-			
-			// Crop left
-			if ( point.agemos < minX && i < l - 1 ) {
-				if ( !croppedBefore || croppedBefore.agemos < point.agemos ) {
-					croppedBefore = {
-						agemos : minX,
-						value  : getYatX(minX, point.agemos, point.value, data[i+1].agemos, data[i+1].value)
-					};
+				points.push([x, y1], [x, y2]);
+				
+				if (exit) {
+					break;
 				}
 			}
 			
-			// Crop right
-			else if ( point.agemos > maxX && i > 0 ) {
-				if ( !croppedAfter || croppedAfter.agemos > point.agemos ) {
-					croppedAfter = {
-						agemos : maxX,
-						value  : getYatX(maxX, point.agemos, point.value, data[i-1].agemos, data[i-1].value)
-					};
-				}
-			}
-			else {
-				out.push( point );
-			}
-			
-			lastPoint = point;
-		}
-	}
-	
-	if ( croppedBefore ) {
-		out.unshift( croppedBefore );
-		out.croppedBefore = true;
-	}
-	
-	if ( croppedAfter ) {
-		out.push( croppedAfter );
-		out.croppedAfter = true;
-	}
-	
-	return out;
-}
-
-function scale( X, dataMin, dataMax, axisMin, axisMax ) 
-{
-	if ( dataMin === dataMax ) {
-		return axisMin + ( axisMax - axisMin ) / 2;
-	}
-	
-	var a = ( axisMax - axisMin ) / ( dataMax - dataMin );
-	var b = axisMin - a * dataMin;
-	
-	return a*X + b;
-};
-
-function getCurvesData( dataSet, startAge, endAge )
-{
-	if ( !GC.DATA_SETS.hasOwnProperty(dataSet) ) {
-		//throw "No such data-set '" + dataSet + "'";
-		return [];
-	}
-	
-	var gender   = GC.App.getGender(),
-		data     = [],
-		set      = GC.DATA_SETS[dataSet],
-		pcts     = GC.Preferences.prop("percentiles");
-		
-	if ( startAge === undefined ) {
-		startAge = Math.max(GC.App.getStartAgeMos() - 1, 0);
-	}
-	
-	if ( endAge === undefined ) {
-		endAge = GC.App.getEndAgeMos() + 1;
-	}
-	//console.log(startAge, " - ", endAge);
-	
-	if (set.type == "LMS") { 
-		$.each(pcts, function(i, pct) {
-			data[i] = {
-				label: pct * 100 , 
-				data : GC.generateCurveSeries(set, gender, pct, startAge, endAge)
+			return { 
+				distance : distance, 
+				p1       : p1, 
+				p2       : p2, 
+				points   : points 
 			};
-		});
-	} 
-	else if (set.type == "points") {
-		var sets = set.data[gender];
+		}
+	}
+	
+	function sumLinesY(l1, l2, method, precision) {
+		precision = Math.abs( GC.Util.round( precision, 50 ) );
 		
-		for (var label in sets) {
-			data.push({ 
-				label: label, 
-				data: GC.convertPointsSet (sets[label], startAge, endAge) 
+		var len1 = l1.length,
+			len2 = l2.length,
+			out  = [];
+		
+		if ( len1 > 1 && len2 > 1 ) {
+			
+			var range1   = findMinMax(l1, 0),
+				range2   = findMinMax(l2, 0),
+				minX     = Math.min(range1.min, range2.min),
+				maxX     = Math.max(range1.max, range2.max),
+				range    = maxX - minX,
+				step     = range / (precision + 1),
+				x;
+				
+			for ( x = minX; x < maxX; x = Math.min(x + step, maxX) ) {
+				
+				if ( x < Math.max(range1.min, range2.min) ) {
+					out.push([ 
+						x, 
+						l1[0][0] < l2[0][0] ? getLineYatX(l1, x) : getLineYatX(l2, x)
+					]);
+				}
+				else if ( x > Math.min( range1.max, range2.max ) ) {
+					out.push([ 
+						x, 
+						range1.max > range2.max ? getLineYatX(l1, x) : getLineYatX(l2, x)
+					]);
+				}
+				else {
+					out.push([ x, Math[method](getLineYatX(l1, x), getLineYatX(l2, x)) ]);
+				}	
+			}
+		}
+		
+		return out;
+	}
+	
+	function getYatX( x, p1x, p1y, p2x, p2y ) {
+		if (p1y === p2y) { return p1y; }
+		if (p1x === p2x) { return (p1y + p2y) / 2; }
+		var a = p1y - p2y, b = p2x - p1x;
+		return p1y - a * (x - p1x) / b;
+	}
+
+	function getXatY( y, p1x, p1y, p2x, p2y ) {
+		// x = x0 + (1 / slope) * (y - y0)
+		//var x = p1x + (1 / (p2x - p1x)) * (y - p1y);
+		var x = p1x + (p2x - p1x) * (y - p1y) / (p2y - p1y);
+		return x;
+		
+		//if (p1x === p2x) return p1x;
+		//if (p1y === p2y) return (p1x + p2x) / 2;
+		//var a = p1y - p2y, b = p2y - p1y;
+		//return p1x - b * (y - p1y)/b;
+	}
+	
+	function months2weeks( m ) {
+		return GC.Util.floatVal( m ) * GC.Constants.TIME_INTERVAL.DAYS_IN_MONTH / GC.Constants.TIME_INTERVAL.DAYS_IN_WEEK;
+	}
+	
+	function weeks2months( w ) {
+		return GC.Util.floatVal( w ) * GC.Constants.TIME_INTERVAL.DAYS_IN_WEEK / GC.Constants.TIME_INTERVAL.DAYS_IN_MONTH;
+	}
+	
+	function strPad( str, len, character, front ) {
+		var l = str.length, add = "", i; 
+		if (len > l) {
+			for ( i = l; i < len; i++ ) {
+				add += character || " ";
+			}
+			if (front) {
+				str = add + str;
+			} else {
+				str += add;
+			}
+		}
+		return str;
+	}
+	
+	function stripTags(str) {
+		return str.replace(new RegExp("<.*?>", "g"), "");
+	}
+	
+	function ellipsis(str, maxWords, maxChars, suffix) {
+		str    = $.trim(stripTags(String(str)));
+		suffix = String(suffix || "...");
+		
+		var words = str.split(/\s+/),
+			l = words.length,
+			out = [],
+			outLen = 0,
+			word,
+			i;
+		
+		for ( i = 0; i < l && i < maxWords; i++ ) {
+			out[i] = words[i];
+		}
+		
+		out = out.join(" ");
+		outLen = out.length;
+		
+		if (maxChars && outLen > maxChars - suffix.length) {
+			out = out.substr(0, maxChars - suffix.length) + suffix;
+		}
+		
+		return out;
+	}
+	
+	function getCurvesData( dataSet, startAge, endAge ) {
+		if ( !GC.DATA_SETS.hasOwnProperty(dataSet) ) {
+			//throw "No such data-set '" + dataSet + "'";
+			return [];
+		}
+		
+		var gender   = GC.App.getGender(),
+			data     = [],
+			set      = GC.DATA_SETS[dataSet],
+			pcts     = GC.Preferences.prop("percentiles"),
+			label;
+			
+		if ( startAge === undefined ) {
+			startAge = Math.max(GC.App.getStartAgeMos() - 1, 0);
+		}
+		
+		if ( endAge === undefined ) {
+			endAge = GC.App.getEndAgeMos() + 1;
+		}
+		//console.log(startAge, " - ", endAge);
+		
+		if (set.type == "LMS") { 
+			$.each(pcts, function(i, pct) {
+				data[i] = {
+					label: pct * 100 , 
+					data : GC.generateCurveSeries(set, gender, pct, startAge, endAge)
+				};
+			});
+		} 
+		else if (set.type == "points") {
+			var sets = set.data[gender];
+			
+			for (label in sets) {
+				data.push({ 
+					label: label, 
+					data: GC.convertPointsSet (sets[label], startAge, endAge) 
+				});
+			}
+			
+			data.sort(function (a,b) {
+				if ( a.data && a.data.length && b.data && b.data.length ) {
+					return a.data[0].y - b.data[0].y;
+				}
+				return 0;
 			});
 		}
 		
-		data.sort(function (a,b) {
-			if ( a.data && a.data.length && b.data && b.data.length )
-				return a.data[0].y - b.data[0].y;
-			return 0;
-		});
+		return data;
 	}
 	
-	return data;
-}
-
-function formatWeeks( weeks )
-{
-	if ( weeks < 0 )
-		return "-";
+	/**
+	 * The data returned by getCurvesData() usually contains extra entries 
+	 * for each line. It has the last point before the current start age (if
+	 * the start age is greather then 0) and the first point after the end 
+	 * age (if such point exists). Now that data must be "cropped to the 
+	 * chart dimensions"
+	 */
+	function cropCurvesDataX( data, minX, maxX ) {
 		
-	if ( weeks < 1 )
-		return GC.Util.round( weeks * 7 ) + "d";
-		
-	if ( weeks > GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR )
-		return GC.Util.round( (weeks / GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR) * 10 ) / 10 + "Y";
-		
-	//if ( weeks > GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH )
-	//	return GC.Util.round( weeks / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH ) + "m";
-	
-	return weeks;
-}
-
-function formatMonths( m )
-{
-	if ( m < 0 )
-		return "-";
-		
-	if ( m > 12 )
-		return GC.Util.round( (m / 12) * 10 ) / 10 + "Y";
-	
-	return m;
-}
-
-function strPad( str, len, character, front ) {
-	var l = str.length, add = "", i; 
-	if (len > l) {
-		for ( i = l; i < len; i++ ) {
-			add += character || " ";
+		var len = data.length, i, ps;
+		if ( len > 1 ) {
+			for ( i = 0; i < len; i++ ) {
+				ps = new PointSet( data[i].data, "x", "y" );
+				ps.limitDensity(80);
+				ps.clip(minX, maxX);
+				//ps.smooth(3);
+				
+				data[i].data = ps._data;
+				ps = null;
+			}
 		}
-		if (front) {
-			str = add + str;
-		} else {
-			str += add;
+		return data;
+	}
+	
+	function scale( X, dataMin, dataMax, axisMin, axisMax ) {
+		if ( dataMin === dataMax ) {
+			return axisMin + ( axisMax - axisMin ) / 2;
 		}
+		
+		var a = ( axisMax - axisMin ) / ( dataMax - dataMin );
+		var b = axisMin - a * dataMin;
+		
+		return a*X + b;
 	}
-	return str;
-}
+	
+	function findMinMax(arr, el) {
+		var len = arr.length, res, i;
+		if (!len) {
+			return { min: 0, max : 0 };
+		}
+		res = { min: arr[0][el], max: arr[0][el] };
+		
+		if (len > 1) {
+			for ( i = len - 1; i >= 0; i-- ) {
+				if (arr[i][el] < res.min) {res.min = arr[i][el];}
+				if (arr[i][el] > res.max) {res.max = arr[i][el];}
+			}
+		}
+		return res;
+	}
+	
+	$.extend(NS.Util, {
+		floatVal              : floatVal,
+		intVal                : intVal,
+		round                 : round,
+		TaskQueue             : TaskQueue,
+		luma                  : luma,
+		mixColors             : mixColors,
+		brighten              : brighten,
+		darken                : darken,
+		uid                   : uid,
+		extend                : extend,
+		cmToUS                : cmToUS,
+		kgToUS                : kgToUS,
+		bmiToUS               : bmiToUS,
+		format                : format,
+		arrayCeil             : arrayCeil,
+		arrayFloor            : arrayFloor,
+		roundToPrecision      : roundToPrecision,
+		readableColor         : readableColor,
+		cDateFormatToJqFormat : cDateFormatToJqFormat,
+		parseTemplate         : parseTemplate,
+		createProperty        : createProperty,
+		createMethod          : createMethod,
+		clipLine              : clipLine,
+		getLineYatX           : getLineYatX,
+		getLineXatY           : getLineXatY,
+		getLinesMinDistanceY  : getLinesMinDistanceY,
+		sumLinesY             : sumLinesY,
+		getYatX               : getYatX,
+		getXatY               : getXatY,
+		months2weeks          : months2weeks,
+		weeks2months          : weeks2months,
+		strPad                : strPad,
+		stripTags             : stripTags,
+		ellipsis              : ellipsis,
+		getCurvesData         : getCurvesData,
+		cropCurvesDataX       : cropCurvesDataX,
+		scale                 : scale,
+		findMinMax            : findMinMax
+	});
+	
+	$.extend(NS, {
+		Point      : Point,
+		Rect       : Rect
+	});
+	
+}(GC));
 
-function stripTags(str) {
-	return str.replace(/<.*?>/g, "");
-}
-
-function ellipsis(str, maxWords, maxChars, suffix) {
-	str    = $.trim(stripTags(String(str)));
-	suffix = String(suffix || "...");
-	
-	var words = str.split(/\s+/),
-		l = words.length,
-		out = [],
-		outLen = 0,
-		word,
-		i;
-	
-	for ( i = 0; i < l && i < maxWords; i++ ) {
-		out[i] = words[i];
-	}
-	
-	out = out.join(" ");
-	outLen = out.length;
-	
-	if (maxChars && outLen > maxChars - suffix.length) {
-		out = out.substr(0, maxChars - suffix.length) + suffix;
-	}
-	
-	return out;
-}
+// =============================================================================
+// Raphael and Jquery plugins that are just temporary here!
+// =============================================================================
 
 // Tooltip
 (function() {
 	
 	var _tooltips = [];
+	var _reorderTimeout;
+	var _redrawTimeout;
 	
 	/*   P1  __________________  P2
-	 *      /                  |
-	 *     /                   |
-	 * P0 <       Tooltip      |
-	 *     \                   |
-	 *      \__________________| 
+	 *      /                  \
+	 *  P0 /       Tooltip      \ P5
+	 *     \                    /
+	 *      \__________________/ 
 	 *   P4                     P3
 	 */
 	
@@ -1308,7 +1267,8 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		this.p2     = new GC.Point();
 		this.p3     = new GC.Point();
 		this.p4     = new GC.Point();
-		this.shiftY = 0//cfg.shiftY;
+		this.p5     = new GC.Point();
+		this.shiftY = 0;//cfg.shiftY;
 		this.orient = GC.Constants.DIRECTION.RIGHT;
 		
 		this.shadow = paper.path().attr({
@@ -1317,8 +1277,11 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			opacity : cfg.shadowOpacity
 		}).addClass("tooltip-node");
 		
-		if ( !Raphael.svg ) {
-			this.shadow.hide();
+		this._hasShadow = !!Raphael.svg;
+		
+		if ( !this._hasShadow ) {
+			//this.shadow.hide();
+			this.shadow.attr("visibility", "hidden");
 		}
 		
 		this.shape = paper.path().attr({
@@ -1353,7 +1316,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		
 		if (cfg.text2) {
 			if (cfg.text2bg) {
-				this.text2bg = paper.rect(0, 0).attr({
+				this.text2bg = paper.path().attr({
 					"fill" : cfg.text2bg,
 					"stroke" : "none"
 				}).addClass("tooltip-node");
@@ -1370,7 +1333,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		
 		this.setOrientation(GC.Constants.DIRECTION.RIGHT);
 		
-		var width = this.p2.x;
+		var width = this.p5.x;
 		if (this.cfg.getWidth) {
 			width = this.cfg.getWidth(this, width);
 		}
@@ -1383,9 +1346,15 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		Tooltip.reorder();
 	}
 	
-	Tooltip.reorder = function()
+	Tooltip.reorder = function(doItNow)
 	{ 
+		_tooltips.sort(function(a, b) {
+			return a.cfg.y - b.cfg.y;
+		});
+		
 		var l = _tooltips.length,
+			toRedraw = [],
+			redrawThis = false,
 			thisTooltip,
 			tt, 
 			i,
@@ -1401,45 +1370,50 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			prevY = null;
 			
 			if (thisTooltip.shiftY !== shift) {
-				thisTooltip.setShiftY( shift );
+				thisTooltip.setShiftY( shift, true );
+				toRedraw.push(thisTooltip);
+				redrawThis = true;
 			}
 			
-			//if ( i === 0 ) {
-				
-			//} else {
-				thisBox = thisTooltip.getBBox();
-				for ( j = 0; j < l; j++ ) {
-					tt = _tooltips[j];
-					curBox = tt.getBBox();				
-					if (
-						// Don't compare with itself
-						//j !== i
-						tt !== thisTooltip
-						
-						// The observed point is above
-						&& (tt.cfg.y < thisTooltip.cfg.y || (tt.cfg.y === thisTooltip.cfg.y && tt.cfg.x >= thisTooltip.cfg.x))
-						
-						// If this is the first point above, or if the previous 
-						// one was higher than this one
-						&& (prevY === null || prevY <= tt.cfg.y)
-						
-						// If the tooltips intersect
-						&& !(thisBox.x2 < curBox.x1 || thisBox.x1 > curBox.x2)
-						&& !(thisBox.y2 < curBox.y1 || thisBox.y1 > curBox.y2)
-						
-						// Skip the hidden tooltips
-						&& (tt.nodes[0] && tt.nodes[0].node.style.display != "none")
-					) {
-						prevY = tt.cfg.y;
-						shift = curBox.y2 + 10 - (thisTooltip.cfg.y - (thisTooltip.p3.y - thisTooltip.p2.y) / 2);
-					}
+			thisBox = thisTooltip.getBBox();
+			for ( j = 0; j < l; j++ ) {
+				tt = _tooltips[j];
+				curBox = tt.getBBox();				
+				if (
+					// Don't compare with itself
+					//j !== i
+					tt !== thisTooltip
+					
+					// The observed point is above
+					&& (tt.cfg.y < thisTooltip.cfg.y || (tt.cfg.y === thisTooltip.cfg.y && tt.cfg.x >= thisTooltip.cfg.x))
+					
+					// If this is the first point above, or if the previous 
+					// one was higher than this one
+					&& (prevY === null || prevY <= tt.cfg.y)
+					
+					// If the tooltips intersect
+					&& !(thisBox.x2 < curBox.x1 || thisBox.x1 > curBox.x2)
+					&& !(thisBox.y2 < curBox.y1 || thisBox.y1 > curBox.y2)
+					
+					// Skip the hidden tooltips
+					&& (tt.nodes[0] && tt.nodes[0].node.style.display != "none")
+				) {
+					prevY = tt.cfg.y;
+					shift = curBox.y2 + 10 - (thisTooltip.cfg.y - (thisTooltip.p3.y - thisTooltip.p2.y) / 2);
 				}
-			//}
+			}
 			
 			if (prevY !== null && thisTooltip.shiftY !== shift) {
-				thisTooltip.setShiftY( shift );
+				if (!redrawThis) {
+					toRedraw.push(thisTooltip);
+				}
+				thisTooltip.setShiftY( shift, true );
 			}
 		}
+		
+		$.each(toRedraw, function() { 
+			this.draw();
+		});
 	};
 	
 	Tooltip.removeAll = function()
@@ -1454,10 +1428,10 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		
 		getBBox : function() {
 			var box = {
-				x1 : Math.min(this.p0.x, this.p1.x, this.p2.x, this.p3.x, this.p4.x),
-				x2 : Math.max(this.p0.x, this.p1.x, this.p2.x, this.p3.x, this.p4.x),
-				y1 : Math.min(this.p0.y, this.p1.y, this.p2.y, this.p3.y, this.p4.y),
-				y2 : Math.max(this.p0.y, this.p1.y, this.p2.y, this.p3.y, this.p4.y)
+				x1 : Math.min(this.p0.x, this.p1.x, this.p2.x, this.p3.x, this.p4.x, this.p5.x),
+				x2 : Math.max(this.p0.x, this.p1.x, this.p2.x, this.p3.x, this.p4.x, this.p5.x),
+				y1 : Math.min(this.p0.y, this.p1.y, this.p2.y, this.p3.y, this.p4.y, this.p5.y),
+				y2 : Math.max(this.p0.y, this.p1.y, this.p2.y, this.p3.y, this.p4.y, this.p5.y)
 			},
 			shadowBox = this.shadow.getBBox();
 			
@@ -1471,12 +1445,12 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			return box;
 		},
 		
-		remove : function() 
-		{
+		remove : function() {
+			var i;
 			while ( this.nodes.length ) {
 				this.nodes.shift().remove();
 			}
-			for ( var i = _tooltips.length - 1; i >= 0; i--) {
+			for (i = _tooltips.length - 1; i >= 0; i--) {
 				if ( _tooltips[i].id === this.cfg.id ) {
 					_tooltips.splice(i, 1);
 					break;
@@ -1484,8 +1458,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			}
 		},
 		
-		setShiftY : function( val ) 
-		{
+		setShiftY : function( val, dontDraw ) {
 			var top = this.p0.y + val - this.cfg.paddingY - this.textBox.height / 2;
 			if ( top < 40 ) {
 				val += Math.abs(40 - top);
@@ -1496,7 +1469,25 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			this.p2.y = this.p1.y;
 			this.p3.y = this.p0.y + this.shiftY + this.cfg.paddingY + this.textBox.height / 2;
 			this.p4.y = this.p3.y;
-			this.draw();
+			this.p5.y = this.p2.y + (this.p3.y - this.p2.y) / 2;
+			if (!dontDraw) {
+				this.draw();
+			} else {
+				var a = Raphael.angle(
+					this.cfg.x + 1,
+					this.cfg.y,
+					this.cfg.x,
+					this.cfg.y,
+					this.p1 .x,
+					this.p1 .y + (this.p4.y - this.p1.y) / 2
+				);
+				
+				this.p0.y = this.cfg.y + this.cfg.pointOffset * Math.sin( a );
+				
+				if (this.cfg.onCreate) {
+					this.cfg.onCreate(this);
+				}
+			}
 		},
 		
 		setOrientation : function( orient ) 
@@ -1506,6 +1497,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			this.p2.y = this.p1.y;
 			this.p3.y = this.cfg.y + this.shiftY + this.cfg.paddingY + this.textBox.height / 2;
 			this.p4.y = this.p3.y;
+			this.p5.y = this.p2.y + (this.p3.y - this.p2.y) / 2;
 			
 			var width = this.textBox.width;
 			
@@ -1516,15 +1508,16 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 					this.p2.x = this.p1.x  - width - this.cfg.paddingX * (this.text2 ? 4 : 2);
 					this.p3.x = this.p2.x;
 					this.p4.x = this.p1.x;
+					this.p5.x = this.p2.x - (this.cfg.arrowType ? 10 : 0);
 					this.orient = GC.Constants.DIRECTION.LEFT;
 					break;
-				case GC.Constants.DIRECTION.RIGHT:
 				default:
 					this.p0.x = this.cfg.x + this.cfg.pointOffset;
 					this.p1.x = this.p0.x  + this.cfg.offsetX;
 					this.p2.x = this.p1.x  + width + this.cfg.paddingX * (this.text2 ? 4 : 2);
 					this.p3.x = this.p2.x;
 					this.p4.x = this.p1.x;
+					this.p5.x = this.p2.x + (this.cfg.arrowType ? 10 : 0);
 					this.orient = GC.Constants.DIRECTION.RIGHT;
 					break;
 			}
@@ -1532,8 +1525,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			this.draw();
 		},
 		
-		draw : function()
-		{
+		draw : function() {
 			var a = Raphael.angle(
 				this.cfg.x + 1,
 				this.cfg.y,
@@ -1550,6 +1542,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 				"M" + this.p0.x + "," + this.p0.y +
 				"L" + this.p1.x + "," + this.p1.y + 
 				"L" + this.p2.x + "," + this.p2.y +
+				"L" + this.p5.x + "," + this.p5.y +
 				"L" + this.p3.x + "," + this.p3.y +
 				"L" + this.p4.x + "," + this.p4.y +
 				"Z"
@@ -1575,14 +1568,19 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 					"text-anchor" : this.orient == GC.Constants.DIRECTION.RIGHT ? "start" : "end"
 				});
 				if (this.text2bg) {
-					this.text2bg.attr({
-						x : this.orient == GC.Constants.DIRECTION.RIGHT ? 
+					var l = this.orient == GC.Constants.DIRECTION.RIGHT ? 
 							this.p1.x + this.cfg.paddingX * 2 + this.textBox.width - textBox2.width :
-							this.p2.x,
-						y : this.p1.y,
-						width : textBox2.width + this.cfg.paddingX * 2,
-						height: this.p4.y - this.p1.y
-					})
+							this.p1.x - (this.cfg.paddingX * 2 + this.textBox.width - textBox2.width),
+						r = (textBox2.width + this.cfg.paddingX * 2) * (GC.Constants.DIRECTION.RIGHT ? 1 : -1);
+							
+					this.text2bg.attr({
+						path :  "M" + l         + "," + this.p1.y + 
+								"H" + this.p2.x + 
+								"L" + this.p5.x + "," + this.p5.y + 
+								"L" + this.p3.x + "," + this.p3.y + 
+								"L" + l         + "," + this.p3.y +
+								"z"
+					});
 				}
 			}
 			
@@ -1653,13 +1651,14 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			shadowColor   : "#000",
 			shadowBlur    : 2,
 			text2         : "",
+			arrowType     : false,
 			textAttr      : {
 				"font-size" : 14
 			},
 			id            : Raphael.createUUID()
-		}, settings);
+		}, settings), i;
 		
-		for ( var i = _tooltips.length - 1; i >= 0; i--) {
+		for ( i = _tooltips.length - 1; i >= 0; i--) {
 			if ( _tooltips[i].id === cfg.id ) {
 				_tooltips[i].remove();
 				_tooltips.splice(i, 1);
@@ -1673,12 +1672,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 	GC.Tooltip = Tooltip;
 	GC.tooltip = tooltip;
 	
-})();
-
-
-// =============================================================================
-// Raphael and Jquery plugins that are just temporary here!
-// =============================================================================
+}());
 
 // $.fn.equalHeight
 (function($) {
@@ -1690,7 +1684,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		}).height(h);
 	};
 	
-})( jQuery );
+}( jQuery ));
 
 
 // Raphael plugins
@@ -1742,7 +1736,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		return this;
 	};
 	
-})();
+}());
 
 // $.fn.scrollParent
 (function($) {
@@ -1753,19 +1747,19 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			node = node.parentNode;
 			
 			css = $(node).css("overflow");
-			if ( css != "visible" ) return $(node);
+			if ( css != "visible" ) {return $(node);}
 			
 			css = $(node).css("overflowX");
-			if ( css != "visible" ) return $(node);
+			if ( css != "visible" ) {return $(node);}
 			
 			css = $(node).css("overflowY");
-			if ( css != "visible" ) return $(node);
+			if ( css != "visible" ) {return $(node);}
 		}
 		
 		return null;
 	};
 	
-})(jQuery);
+}(jQuery));
 
 // $.helperStyle
 // =============================================================================
@@ -1803,7 +1797,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		}
 	};
 	
-})(jQuery);
+}(jQuery));
 
 // mask / unmask
 // =============================================================================
@@ -1863,7 +1857,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		});
 	};
 	
-})(jQuery);
+}(jQuery));
 
 // toggle-button
 // =============================================================================
@@ -1890,18 +1884,18 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 				$input.removeClass("toggle-button").wrap('<span class="toggle-button-wrap"/>');
 				var $wrapper = $input.parent();
 				$wrapper.append(
-					'<table class="toggle-button">\
-						<tr>\
-							<td><label data-value="' + v1 + '">' + l1 + '</label></td>\
-							<td class="action">\
-								<div>\
-									<label data-value="' + v1 + '"></label>\
-									<label data-value="' + v2 + '"></label>\
-								</div>\
-							</td>\
-							<td><label data-value="' + v2 + '">' + l2 + '</label></td>\
-						</tr>\
-					</table>'
+					'<table class="toggle-button">' + 
+						'<tr>' + 
+							'<td><label data-value="' + v1 + '">' + l1 + '</label></td>' + 
+							'<td class="action">' + 
+								'<div>' + 
+									'<label data-value="' + v1 + '"></label>' + 
+									'<label data-value="' + v2 + '"></label>' + 
+								'</div>' + 
+							'</td>' + 
+							'<td><label data-value="' + v2 + '">' + l2 + '</label></td>' + 
+						'</tr>' + 
+					'</table>'
 				);
 				
 				if (c) {
@@ -1927,20 +1921,26 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			}
 		});
 	});
-})(jQuery);
+}(jQuery));
 
 // checkbox-button
 // =============================================================================
 (function($) {
 	
+	function onCheckboxButtonChange() {
+		$(this).closest(".checkbox-button")
+		.toggleClass("on", this.checked)
+		.toggleClass("off", !this.checked);
+	}
+	
 	$(function() {
 		$("input.checkbox-button").each(function(i, input) {
 			var $input = $(input),
-				l  = $input.attr("data-label")
+				l  = $input.attr("data-label"),
 				c1 = $input.attr("data-classnames"),
 				c2 = $input.attr("data-btnclassnames") || "";
 			
-			$input.removeClass("checkbox-button").wrap('<label class="checkbox-button"/>');
+			$input.removeClass("checkbox-button").wrap('<span class="checkbox-button"/>');
 			var $wrapper = $input.parent();
 			
 			// label
@@ -1958,11 +1958,18 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 					e.preventDefault();
 					return true;
 				}
+				input.checked = !input.checked;
+				$input.trigger("change");
+				e.stopPropagation();
 			});
+			
+			$input.bind("change", onCheckboxButtonChange);
+			
+			onCheckboxButtonChange.call(input);
 		});
 	});
 	
-})(jQuery);
+}(jQuery));
 
 // menu-button
 // =============================================================================
@@ -1997,11 +2004,12 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 						.html( '<a>' + option.label + '</a>' )
 						.appendTo(menu);
 					
-					if ( option.disabled )
+					if ( option.disabled ) {
 						div.addClass("ui-state-disabled");
-						
-					if ( option.selected )
+					}	
+					if ( option.selected ) {
 						inst._index = option.index;
+					}
 				}
 			});
 			
@@ -2010,6 +2018,23 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			} else {
 				this.element.find(".value > span").html(this.options.placeHolder);
 			}
+		},
+		
+		setIndexEnabled : function(index, bEnabled) {
+			if (index >= 0 && index < this.options.dataSet.length) {
+				bEnabled = !!bEnabled;
+				this.options.dataSet[index].disabled = !bEnabled;
+				this.element.find('.menu [data-index="' + index + '"]').toggleClass(
+					"ui-state-disabled",
+					!bEnabled
+				);
+			}
+		},
+		
+		forEachOption : function(callback) {
+			$.each(this.options.dataSet, function(i, o) {
+				callback.call(this, i, o);
+			});
 		},
 		
 		_create : function() {
@@ -2040,9 +2065,9 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 				},
 				"mousedown .option" : function(e) {
 					var div = $(e.target).closest(".option");
-					if (div.is(".ui-state-disabled"))
+					if (div.is(".ui-state-disabled")) {
 						return false;
-						
+					}	
 					this.value( div.data("option").value );
 				}
 			});
@@ -2063,9 +2088,9 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		},
 		
 		value : function( val, silent ) {
-			if ( val === undefined ) 
+			if ( val === undefined ) {
 				return this._value;
-			
+			}
 			if ( this._value !== val ) {
 				
 				var inst = this, j = 0;
@@ -2099,9 +2124,9 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		},
 		
 		index : function( i, silent ) {
-			if ( i === undefined )
+			if ( i === undefined ) {
 				return this._index;
-				
+			}	
 			i = parseInt(i, 10);
 			if ( !isNaN(i) && i >= -1 ) {
 				
@@ -2126,6 +2151,27 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		
 	});
 	
+	function hasData(src) {
+		var patient = GC.App.getPatient(),
+			startAge,
+			endAge,
+			gender;
+			
+		if (patient) {
+			startAge = GC.App.getStartAgeMos();
+			endAge   = GC.App.getStartAgeMos();
+			gender   = GC.App.getGender();
+			
+			if (GC.getDataSet(src, "LENGTH", gender, startAge, endAge) ||
+				GC.getDataSet(src, "WEIGHT", gender, startAge, endAge) ||
+				GC.getDataSet(src, "HEADC" , gender, startAge, endAge) ||
+				GC.getDataSet(src, "BMI"   , gender, startAge, endAge)) {
+				return true;	
+			}
+		}
+		return false; 
+	}
+	
 	$(function() {
 		$(".menu-button").menuButton({
 			placeHolder : "PICK A CHART",
@@ -2149,13 +2195,14 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 				},
 				{
 					label : "Fenton",
-					value : "FENTON"
+					value : "FENTON",
+					disabled : hasData("FENTON")
 				}
 			]
 		});
 	});
 	
-})(jQuery);
+}(jQuery));
 
 // AutoComplete
 // =============================================================================
@@ -2394,11 +2441,11 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 					}
 					html[j++] = o.substr(end);
 					html[j++] = '</span>';
-					html[j++] = '<i>'
-					html[j++] = '<a class="delete">Delete</a>'
+					html[j++] = '<i>';
+					html[j++] = '<a class="delete">Delete</a>';
 					html[j++] = ' | ';
-					html[j++] = '<a class="edit">Edit</a>'
-					html[j++] = '</i>'
+					html[j++] = '<a class="edit">Edit</a>';
+					html[j++] = '</i>';
 					html[j++] = '</div>';
 					
 					$(html.join("")).appendTo(inst._list);
@@ -2416,7 +2463,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		
 	});
 
-})(jQuery);
+}(jQuery));
 
 // stepInput
 // =============================================================================
@@ -2520,11 +2567,23 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		},
 		
 		_parse : function(str) {
-			if (!str) return str;
+			if (!str) { 
+				return str;
+			}
 			if ($.isFunction(this.options.parse)) {
 				return this.options.parse.call(this, str);
 			}
 			return GC.Util.floatVal(str);
+		},
+		
+		disable : function() {
+			this.element.prop("disabled", true).parent().addClass("disabled");
+			return this._super();
+		},
+		
+		enable : function() {
+			this.element.prop("disabled", false).parent().removeClass("disabled");
+			return this._super();
 		},
 		
 		value : function(n, silent) {
@@ -2571,17 +2630,21 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			
 			var stepFn = (function(inst) {
 				return function() {
-					(inst._timer && clearTimeout(inst._timer));
+					if (inst._timer) {
+						clearTimeout(inst._timer);
+					}
 					inst._step(n);
 					inst._timer = setTimeout(stepFn, inst.options.speed);
 				};
-			})(this);
+			}(this));
 			
 			this._timer = setTimeout(stepFn, this.options.delay);
 		},
 		
 		_stop : function(type, add) {
-			(this._timer && clearTimeout(this._timer));
+			if (this._timer) {
+				clearTimeout(this._timer);
+			}
 			return this;
 		},
 		
@@ -2602,12 +2665,12 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		_canStep : function(n) {
 			return  this._value + n * this.options.step >= this.options.min && 
 					this._value + n * this.options.step <= this.options.max;
-		},
+		}
 	});
 	
 	
 	
-})(jQuery);
+}(jQuery));
 
 // timeIntervalInput
 (function($) {
@@ -2677,11 +2740,11 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 			var inst = this;
 			$.each(META, function(i, m) {
 				inst["set" + m.name] = function(n) {
-					return this.value(this.time["set" + m.name](n) * 1);
+					return this.value(Number(this.time["set" + m.name](n)));
 				};
 				
 				inst["add" + m.name] = function(n) {
-					return this.value(this.time["add" + m.name](n) * 1);
+					return this.value(Number(this.time["add" + m.name](n)));
 				};
 				
 				inst["get" + m.name] = function() {
@@ -2691,10 +2754,11 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		},
 		
 		_canStep : function(n) {
-			var n = this._value + n * this.options.step,
-				minStep = Number.MAX_VALUE;
+			var minStep = Number.MAX_VALUE, i;
 				
-			for ( var i = META.length - 1; i >= 0; i-- ) {
+			n = this._value + n * this.options.step;
+				
+			for (i = META.length - 1; i >= 0; i-- ) {
 				minStep = Math.min(minStep, META[i].q);
 			}
 			
@@ -2715,7 +2779,7 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 				
 				var floor = Math.floor( n / meta.q );
 				if (floor || inst.options.showZero) {
-					str.push(floor + "" + meta.abbr);
+					str.push(String(floor) + meta.abbr);
 				}
 				n -= floor * meta.q;
 			});
@@ -2734,7 +2798,9 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		},
 		
 		_parse : function(str) {
-			if (!str) return str;
+			if (!str) {
+				return str;
+			}
 			if ($.isFunction(this.options.parse)) {
 				return this.options.parse.call(this, str);
 			}
@@ -2758,8 +2824,133 @@ function ellipsis(str, maxWords, maxChars, suffix) {
 		
 	});
 	
-})(jQuery);
+}(jQuery));
 
+// GC.HtmlTooltip
+// =============================================================================
+(function($) {
+
+	function positionTooltip(ttDiv, cfg) {
+		var elem     = cfg.elem,
+			inside   = cfg.inside,
+			css      = {},
+			ttWidth  = ttDiv.outerWidth(true),
+			ttHeight = ttDiv.outerHeight(true),
+			elemWidth,
+			elemHeight,
+			offset;
+		
+		if (!elem) {
+			elem   = "html";
+			inside = true;
+		}
+		
+		elem   = $(elem);
+		offset = elem.offset();
+		
+		// X -------------------------------------------------------------------
+		
+		// left
+		if (cfg.pos.positionX == "left") {
+			css.right = "auto";
+			css.left = inside ? 
+				offset.left : 
+				offset.left - ttWidth;
+		}
+		
+		// right
+		else if (cfg.pos.positionX == "right") {
+			css.right = "auto";
+			css.left = inside ? 
+				offset.left + elem.innerWidth() - ttWidth : 
+				offset.left + elem.outerWidth();
+		}
+		
+		// center
+		else {
+			css.right = "auto";
+			css.left = offset.left + elem.innerWidth() / 2 - ttWidth / 2;
+		}
+		
+		// Y -------------------------------------------------------------------
+		
+		// top
+		if (cfg.pos.positionY == "top") {
+			css.bottom = "auto";
+			css.top = inside ? 
+				offset.top : 
+				offset.top - ttHeight;
+		}
+		
+		// bottom
+		else if (cfg.pos.positionY == "bottom") {
+			css.bottom = "auto";
+			css.top = inside ? 
+				offset.top + elem.innerHeight() - ttHeight : 
+				offset.top + elem.outerHeight();
+		}
+		
+		// center
+		else {
+			css.bottom = "auto";
+			css.top = offset.top + elem.innerHeight() / 2 - ttHeight / 2;
+		}
+		
+		// Overflow corrections ------------------------------------------------
+		var winWidth  = $(window).width();
+		var winHeight = $(window).height();
+		var diff = 0;
+		
+		diff = Math.max(css.left + ttWidth - winWidth, 0);
+		if (diff) {
+			css.left -= diff;
+		}
+		$(".pointer", ttDiv).css("margin-left", diff);
+		
+		ttDiv.css(css);
+	}
+	
+	$.fn.HtmlTooltip = function(options) {
+		
+		return this.each(function() {
+			
+			var cfg = $.extend(true, {
+				data : {},
+				tpl  : "Empty tooltip",
+				elem : this,
+				pos  : {
+					elem      : null,
+					positionX : "center",
+					positionY : "center",
+					inside    : false
+				}
+			}, options);
+			
+			$(this).unbind(".HtmlTooltip").bind({
+				"mouseenter.HtmlTooltip" : function(e) {
+					var ttDiv = $(".gc-tooltip"), first;
+					if (!ttDiv.length) {
+						first = true;
+						ttDiv = $('<div class="gc-tooltip"/>').appendTo("body");
+					}
+					ttDiv.html(GC.Util.parseTemplate(cfg.tpl, cfg.data)).append('<div class="pointer" />');
+					if (first) {
+						ttDiv.css({
+							top : e.pageY + 30,
+							left: e.pageX - ttDiv.outerWidth (true) / 2
+						});
+					}
+					positionTooltip(ttDiv, cfg);
+					ttDiv.removeClass("hidden").addClass("visible");
+				},
+				"mouseleave.HtmlTooltip" : function() {
+					$(".gc-tooltip").removeClass("visible").addClass("hidden");
+				}
+			});
+		});
+	};
+
+}(jQuery));
 
 // GC.Time
 // =============================================================================
@@ -2806,69 +2997,77 @@ GC.Time.prototype = {
 	},
 	
 	toString : function(options) {
-		var n   = this._milliseconds,
-			
-			cfg = $.extend({
-				"Years"       : " " + GC.str("STR_15"), 
-				"Year"        : " " + GC.str("STR_16"), 
-				"Months"      : " " + GC.str("STR_17"), 
-				"Month"       : " " + GC.str("STR_18"), 
-				"Weeks"       : " " + GC.str("STR_19"), 
-				"Week"        : " " + GC.str("STR_20"), 
-				"Days"        : " " + GC.str("STR_21"),
-				"Day"         : " " + GC.str("STR_22"),
-				"Hours"       : false,//"hrs",
-				"Hour"        : "hr",
-				"Minutes"     : "min",
-				"Minute"      : "min",
-				"Seconds"     : "s",
-				"Second"      : "s",
-				"Milliseconds": "ms",
-				"Millisecond" : "ms",
-				separator     : ", ",
-				fractions     : false,
-				showZero      : false,
-				limit         : 2
-			}, options),
-			
-			META = [
-				{ name: "Years"       , q : GC.Constants.TIME.YEAR }, 
-				{ name: "Months"      , q : GC.Constants.TIME.MONTH }, 
-				{ name: "Weeks"       , q : GC.Constants.TIME.WEEK }, 
-				{ name: "Days"        , q : GC.Constants.TIME.DAY }, 
-				{ name: "Hours"       , q : GC.Constants.TIME.HOUR }, 
-				{ name: "Minutes"     , q : GC.Constants.TIME.MINUTE }, 
-				{ name: "Seconds"     , q : GC.Constants.TIME.SECOND }, 
-				{ name: "Milliseconds", q : GC.Constants.TIME.MILISECOND }
-			],
-			
-			str = [], len;
-			
-		$.each(META, function(i, meta) {
-			
-			if ( !cfg[meta.name] && !cfg.zeroFill) {
-				return false;
-			}
-			
-			if ( cfg[meta.name] == "-" || String(cfg[meta.name]) == "false") {
-				return true;
-			}
-			
-			var floor = Math.floor( n / meta.q ),
-				abbr  = cfg[floor === 1 ? meta.name.replace(/s$/i, "") : meta.name];
-				
-			if (floor || cfg.showZero || cfg.zeroFill) {
-				len = str.push(floor + "" + abbr);
-			}
-			n -= floor * meta.q;
-			
-			if (len >= cfg.limit) {
-				return false;
-			}
-		});
-		
-		return str.join(cfg.separator);
+		return GC.Time.toString(this._milliseconds, options);
 	}
+};
+
+GC.Time.toString = function(n, options) {
+	var cfg = $.extend({
+			"Years"       : " " + GC.str("STR_15"), 
+			"Year"        : " " + GC.str("STR_16"), 
+			"Months"      : " " + GC.str("STR_17"), 
+			"Month"       : " " + GC.str("STR_18"), 
+			"Weeks"       : " " + GC.str("STR_19"), 
+			"Week"        : " " + GC.str("STR_20"), 
+			"Days"        : " " + GC.str("STR_21"),
+			"Day"         : " " + GC.str("STR_22"),
+			"Hours"       : false,//"hrs",
+			"Hour"        : "hr",
+			"Minutes"     : "min",
+			"Minute"      : "min",
+			"Seconds"     : "s",
+			"Second"      : "s",
+			"Milliseconds": "ms",
+			"Millisecond" : "ms",
+			separator     : ", ",
+			fractions     : false,
+			showZero      : false,
+			limit         : 2
+		}, options),
+		
+		META = [
+			{ name: "Years"       , q : GC.Constants.TIME.YEAR }, 
+			{ name: "Months"      , q : GC.Constants.TIME.MONTH }, 
+			{ name: "Weeks"       , q : GC.Constants.TIME.WEEK }, 
+			{ name: "Days"        , q : GC.Constants.TIME.DAY }, 
+			{ name: "Hours"       , q : GC.Constants.TIME.HOUR }, 
+			{ name: "Minutes"     , q : GC.Constants.TIME.MINUTE }, 
+			{ name: "Seconds"     , q : GC.Constants.TIME.SECOND }, 
+			{ name: "Milliseconds", q : GC.Constants.TIME.MILISECOND }
+		],
+		
+		str = [], len, correction = 0;
+	
+	if (n < 0) {
+		str.push("-");
+		n *= -1;
+		correction = 1;
+	}
+		
+	$.each(META, function(i, meta) {
+		
+		if ( !cfg[meta.name] && !cfg.zeroFill) {
+			return false;
+		}
+		
+		if ( cfg[meta.name] == "-" || String(cfg[meta.name]) == "false") {
+			return true;
+		}
+		
+		var floor = Math.floor( n / meta.q ),
+			abbr  = cfg[floor === 1 ? meta.name.replace(/s$/i, "") : meta.name];
+			
+		if (floor || cfg.showZero || cfg.zeroFill) {
+			len = str.push(String(floor) + abbr);
+		}
+		n -= floor * meta.q;
+		
+		if (len >= cfg.limit + correction) {
+			return false;
+		}
+	});
+	
+	return str.join(cfg.separator);
 };
 
 // GC.TimeInterval extends GC.Time
@@ -2891,7 +3090,7 @@ GC.TimeInterval = function(d1, d2) {
 GC.TimeInterval.prototype = new GC.Time();
 
 GC.TimeInterval.prototype.setStartDate = function( date ) {
-	var d = new XDate( date );
+	var d = new XDate( String(date) );
 	if (d.valid()) {
 		this._startDate = d;
 		this._milliseconds = d.diffMilliseconds(this._endDate);
@@ -2900,7 +3099,7 @@ GC.TimeInterval.prototype.setStartDate = function( date ) {
 };
 
 GC.TimeInterval.prototype.setEndDate = function( date ) {
-	var d = new XDate( date );
+	var d = new XDate( String(date) );
 	if (d.valid()) {
 		this._endDate = d;
 		this._milliseconds = this._startDate.diffMilliseconds(d);
@@ -2947,7 +3146,7 @@ GC.TimeInterval.prototype.toString2 = function( options ) {
 				"1/3" : 1/3, 
 				"2/3" : 2/3, 
 				"1/4" : 1/4, 
-				"1/4" : 3/4, 
+				"3/4" : 3/4, 
 				"1/5" : 1/5, 
 				"2/5" : 2/5, 
 				"3/5" : 3/5, 
@@ -3029,4 +3228,5 @@ GC.TimeInterval.prototype.onChange = function() {
 		this._startDate.getTime() + 
 		this._milliseconds
 	);
+	return this;
 };

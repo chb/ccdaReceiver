@@ -1,4 +1,4 @@
-/*global Chart, GC, PointSet, strPad, weeks2months, Raphael, findMinMax, getYatX*/
+/*global Chart, GC, PointSet, Raphael*/
 /*jslint eqeq: true, nomen: true, plusplus: true, devel: true */
 (function(NS, $) {
 	
@@ -31,7 +31,7 @@
 			this.heightEstimateSet = pane.paper.set();
 			
 			var inst = this;
-			$("html").bind("set:midParentalHeight." + this.ID, function(e, val) {
+			$("html").bind("change:patient:familyhistory." + this.ID, function(e) {
 				if ( inst.isVisible() ) {
 					if (inst.__CACHE__.midParentalHeight !== undefined) {
 						delete inst.__CACHE__.midParentalHeight;
@@ -66,7 +66,7 @@
 			
 			return out;
 		},
-	
+		
 		getTitle : function() {
 			var ageFrom = GC.App.getStartAgeMos(),
 				ageTo   = GC.App.getEndAgeMos(),
@@ -97,195 +97,6 @@
 		setProblem : function( src ) 
 		{
 			return this._setDataSource( "secondary", src, "LENGTH" );
-		},
-		
-		_getLastAgeMos : function( data ) 
-		{
-			var type = Object.prototype.toString.call(data),
-				arr  = [],
-				x;
-			
-			if ( type == "[object Array]" ) {
-				return findMinMax(data, "Agemos").max;
-			}
-			
-			if ( type == "[object Object]" ) {
-				for ( x in data ) {
-					if ( data.hasOwnProperty(x) ) {
-						arr.push(findMinMax(data[x], "Agemos").max);
-					}
-				}
-				return arr.sort(function(a, b) { return a - b; })[0];
-			}
-			return 0;
-		},
-		
-		_get_midParentalHeight : function() 
-		{
-		    if ( !this.dataSet ) { 
-				return null;
-			}
-			
-			var patient = GC.App.getPatient();
-			
-			if ( !patient.midParentalHeight ) {
-				return null;
-			}
-			
-			var lastHeightEntry = patient.getLastModelEntry(function( entry ) {
-				return entry.hasOwnProperty("lengthAndStature");
-			});
-			
-			if ( !lastHeightEntry || lastHeightEntry.agemos < GC.chartSettings.heightEstimatesMinAge ) {
-				return null;
-			}
-			
-			var dataSet    = GC.DATA_SETS[ this.dataSet ],
-				gender     = GC.App.getGender(),
-				data       = dataSet.data[gender],
-				lastAgeMos = this._getLastAgeMos(data);
-			
-			if ( lastAgeMos < 240 ) {
-				return null;
-			}
-			
-			var pctLast = GC.findPercentileFromX(
-				patient.midParentalHeight, 
-				dataSet, 
-				gender, 
-				lastAgeMos
-			);
-			
-			var nom = GC.findXFromPercentile(
-				pctLast, 
-				dataSet, 
-				gender, 
-				GC.App.getEndAgeMos()
-			);
-			
-			return {
-				height     : nom,
-				percentile : pctLast,
-				title      : GC.str("STR_32") // Mid. Parental Height
-			};
-		},
-		
-		_get_nominalHeight : function() 
-		{
-			if ( !this.dataSet ) {
-				return null;
-			}
-			
-			var lastHeightEntry = GC.App.getPatient().getLastModelEntry(function( entry ) {
-				return entry.hasOwnProperty("lengthAndStature");
-			});
-			
-			if ( !lastHeightEntry || lastHeightEntry.agemos < GC.chartSettings.heightEstimatesMinAge ) {
-				return null;
-			}
-			
-			var dataSet    = GC.DATA_SETS[ this.dataSet ];
-			var gender     = GC.App.getGender();
-			var data       = dataSet.data[gender];
-			var lastAgeMos = this._getLastAgeMos(data);//data[data.length - 1].Agemos;
-			
-			if ( lastAgeMos < lastHeightEntry.agemos ) {
-				return null;
-			}
-			
-			var pctLast = GC.findPercentileFromX(
-				lastHeightEntry.lengthAndStature, 
-				dataSet, 
-				gender, 
-				lastHeightEntry.agemos
-			);
-			
-			var nom = GC.findXFromPercentile(
-				pctLast, 
-				dataSet, 
-				gender, 
-				GC.App.getEndAgeMos()
-			);
-			
-			return {
-				height     : nom,
-				percentile : pctLast,
-				title      : GC.str("STR_33") // Nominal Height
-			};
-		},
-		
-		_get_nominalBoneAge : function() 
-		{
-			if ( !this.dataSet ) { 
-				return null;
-			}
-			
-			// Get the last BoneAge entry from all the data
-			var lastBoneAgeEntry = GC.App.getPatient().getLastModelEntry(function( entry ) {
-				return entry.hasOwnProperty("boneAge");
-			});
-			
-			if ( !lastBoneAgeEntry || lastBoneAgeEntry.agemos < GC.chartSettings.heightEstimatesMinAge ) {
-				return;
-			}
-			
-			var patient = GC.App.getPatient();
-			
-			// The bone age corresponds to the X axis so fist we need to find Y 
-			// (height/stature) from it
-			var height     = lastBoneAgeEntry.lengthAndStature;
-			var age        = lastBoneAgeEntry.agemos;
-			
-			if ( height === undefined ) {
-				var prevEntry = patient.getPrevModelEntry(lastBoneAgeEntry.agemos, function(entry) {
-					return entry.hasOwnProperty("lengthAndStature");
-				});
-				
-				var nextEntry = patient.getNextModelEntry(lastBoneAgeEntry.agemos, function(entry) {
-					return entry.hasOwnProperty("lengthAndStature");
-				});
-				
-				if ( !prevEntry || !nextEntry ) {
-					return;
-				}
-				
-				var h1 = prevEntry.lengthAndStature,
-					h2 = nextEntry.lengthAndStature,
-					x1 = prevEntry.agemos,
-					x2 = nextEntry.agemos;
-					
-				height = h1 + (h2 - h1) / (x2 - x1);
-				age    = x1 + (x2 - x1) / (h2 - h1);
-			}
-			
-			var dataSet    = GC.DATA_SETS[ this.dataSet ];
-			var gender     = GC.App.getGender();
-			var data       = dataSet.data[gender];
-			var lastAgeMos = this._getLastAgeMos(data);//data[data.length - 1].Agemos;
-			
-			if ( lastAgeMos < lastBoneAgeEntry.agemos ) {
-				return null;
-			}
-			
-			var pctLast = GC.findPercentileFromX(
-				height, 
-				dataSet, 
-				gender, 
-				age
-			);
-			
-			var nom = GC.findXFromPercentile(
-				pctLast, 
-				dataSet, 
-				gender, 
-				GC.App.getEndAgeMos()
-			);
-			
-			return {
-				height     : nom,
-				percentile : pctLast,
-				title      : GC.str("STR_34") // Estimated Bone Age Height
-			};
 		},
 		
 		draw : function() 
@@ -344,7 +155,7 @@
 							y1 = prev.value;
 							y2 = next.value;
 							x  = this._scaleX(entry.agemos);
-							y  = this._scaleY(getYatX(entry.agemos, x1, y1, x2, y2));
+							y  = this._scaleY(GC.Util.getYatX(entry.agemos, x1, y1, x2, y2));
 							this._nodes.push(this.pane.paper.circle(x, y, 3).attr({ 
 								"stroke" : GC.Util.darken(this.settings.lines.stroke, 0.3),
 								"fill"   : this.settings.lines.stroke
@@ -401,19 +212,31 @@
 			
 			var all            = [],
 				inst           = this,
-				estMidParental = inst.get("midParentalHeight"),
-				estPercentile  = inst.get("nominalHeight"),
-				estBoneAge     = inst.get("nominalBoneAge"),
-				axis, midY, set;
+				patient        = GC.App.getPatient(),
+				endAgeMos      = GC.App.getEndAgeMos(),
+				estMidParental = patient.getMidParentalHeight(endAgeMos),
+				estPercentile  = patient.getLatestPercentileHeight(endAgeMos),
+				estBoneAge     = patient.getBoneAgeAdjustedHeight(endAgeMos),
+				axis           = this.get("axisCoordinates"),
+				midY, set, y;
 			
 			if ( estMidParental ) {
-				all.push( estMidParental );
+				y = inst._scaleY(estMidParental.height);
+				if (y >= axis.pB.y && y <= axis.pC.y) {
+					all.push( estMidParental );
+				}
 			}
 			if ( estPercentile ) { 
-				all.push( estPercentile );
+				y = inst._scaleY(estPercentile.height);
+				if (y >= axis.pB.y && y <= axis.pC.y) {
+					all.push( estPercentile );
+				}
 			}
 			if ( estBoneAge ) {
-				all.push( estBoneAge );
+				y = inst._scaleY(estBoneAge.height);
+				if (y >= axis.pB.y && y <= axis.pC.y) {
+					all.push( estBoneAge );
+				}
 			}
 			
 			if ( !all.length ) {
@@ -424,7 +247,6 @@
 				return b.height - a.height;
 			});
 			
-			axis = this.get("axisCoordinates"); 
 			midY = axis.pB.y + ( axis.pC.y - axis.pB.y ) / 2;
 			set  = inst.pane.paper.set();
 			
@@ -479,13 +301,11 @@
 				
 				txt = o.title + "\n";
 				
-				txt += GC.App.getMetrics() == "eng" ? 
-					GC.Util.cmToUS(o.height) :
-					GC.Util.roundToPrecision(o.height, 1) + "cm";
+				txt += GC.Util.format(o.height, {type : "height"});
 				
 				txt += GC.App.getPCTZ() == "pct" ? 
-					" (" + GC.Util.round(o.percentile * 100) + "%)" :
-					" (" + GC.Util.round(Math.normsinv(o.percentile)) + "Z)";
+					" (" + GC.Util.format(o.percentile * 100, {type : "percentile"}) + ")" :
+					" (" + GC.Util.format(Math.normsinv(o.percentile), {type : "zscore"}) + ")";
 				
 				ttSettings = {
 					text : txt,

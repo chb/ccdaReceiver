@@ -1,10 +1,10 @@
 /*global 
-Chart, GC, PointSet, strPad, weeks2months, Raphael, console, getLineXatY, $,
-jQuery, debugLog, cropCurvesDataX, getCurvesData, getYatX, findMinMax, scale,
-sumLinesY, getLinesMinDistanceY, months2weeks, XDate, setTimeout*/
+Chart, GC, PointSet, Raphael, console, $,
+jQuery, debugLog,
+months2weeks, XDate, setTimeout*/
 
 /*jslint eqeq: true, nomen: true, plusplus: true, forin: true*/
-"use strict";
+
 
 function ChartPane( paper )
 {
@@ -23,8 +23,8 @@ function ChartPane( paper )
 	
 	this.charts = [];
 	
-	this.topgutter    = GC.chartSettings.topgutter   // + 16;
-	this.bottomgutter = GC.chartSettings.bottomgutter// + 16;
+	this.topgutter    = GC.chartSettings.topgutter;
+	this.bottomgutter = GC.chartSettings.bottomgutter;
 	
 	this._init();
 }
@@ -51,16 +51,7 @@ ChartPane.prototype = {
 		
 		var inst = this, x;
 		
-		$(this.container).css({
-			"maxWidth" : this.maxWidth
-		});
-		
-		$("#timeline-bottom, #timeline-top", this.doc).css({
-			"paddingRight" : $("#stage", this.doc)[0].offsetWidth - $("#stage", this.doc)[0].clientWidth
-		})
-		.find("> div").css({
-			"maxWidth" : this.maxWidth
-		});
+		this._updatePaperWidth();
 		
 		// When to re-draw
 		$("html", this.doc).bind([
@@ -70,31 +61,27 @@ ChartPane.prototype = {
 			"set:primaryData",
 			"set:secondaryData",
 			"set:showPretermArrows",
-			//"set:metrics",
-			//"set:PCTZ",
 			"set:language",
-			"set:gestCorrectionDuration",
-			"set:gestCorrectionType",
 			"set:correctionAge",
 			"set:gestationAge"
 		].join(" "), function() { 
 			inst.draw(); 
 		});
 		
-		GC.Preferences.bind("set:metrics set:pctz set:aspectRatio", function() { 
+		GC.Preferences.bind([
+			"set:metrics",
+			"set:pctz",
+			"set:aspectRatio",
+			"set:nicu",
+			"set:currentColorPreset",
+			"set:gestCorrectionTreshold",
+			"set:gestCorrectionType"
+		].join(" "), function() { 
 			inst.draw(); 
 		});
 		
-		GC.Preferences.bind("set:maxWidth", function(e) { 
-			//console.log(e);
-			var maxWidth = GC.Util.floatVal(e.data.newValue);
-			inst.maxWidth = maxWidth;
-			$(inst.container).css({
-				"maxWidth" : maxWidth
-			});
-			$("#timeline-bottom > div, #timeline-top > div", this.doc).css({
-				"maxWidth" : maxWidth
-			});
+		GC.Preferences.bind("set:widthType set:paperWidth set:maxWidth", function(e) { 
+			inst._updatePaperWidth();
 			inst.draw(); 
 		});
 		
@@ -105,6 +92,36 @@ ChartPane.prototype = {
                 this[x]();
             }
 		}
+	},
+	
+	_updatePaperWidth : function() {
+		if (GC.chartSettings.widthType == "auto") {
+			this.maxWidth = GC.Util.floatVal(GC.chartSettings.maxWidth);
+			$(this.container).css({
+				"maxWidth" : this.maxWidth,
+				"width"    : "auto"
+			});
+			
+			$("#timeline-bottom > div, #timeline-top > div", this.doc).css({
+				"maxWidth" : this.maxWidth,
+				"width"    : "auto"
+			});
+		} else { // fixed
+			var paperWidth = GC.Util.floatVal(GC.chartSettings.paperWidth);
+			$(this.container).css({
+				"maxWidth" : paperWidth,
+				"width"    : "auto"
+			});
+			
+			$("#timeline-bottom > div, #timeline-top > div", this.doc).css({
+				"maxWidth" : paperWidth,
+				"width"    : "auto"
+			});
+		}
+		
+		$("#timeline-bottom, #timeline-top", this.doc).css({
+			"paddingRight" : Math.max($("#stage", this.doc)[0].offsetWidth - $("#stage", this.doc)[0].clientWidth, 0)
+		});
 	},
 	
 	/**
@@ -407,41 +424,14 @@ ChartPane.prototype = {
         var inst = this, hlt;
         
 		$("body")
-        .on("click", ".timeline .weeks .labels div", function() {
+        .on("click", ".timeline .labels div", function() {
 			if (GC.chartSettings.timeline.interactive) {
-	            GC.App.setSelectedAgemos(
-					GC.Util.floatVal(this.innerHTML) / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH,
-					"selected"
-				);
+	            var a = GC.Util.floatVal(this.getAttribute("startAge")),
+					b = GC.Util.floatVal(this.getAttribute("endAge")),
+					m = (a + (b - a) / 2) / GC.Constants.TIME.MONTH;
+				GC.App.setSelectedAgemos(m, "selected");
 	            return false;
            }
-        })
-        .on("click", ".timeline .months .labels div", function() {
-            if (GC.chartSettings.timeline.interactive) {
-	            GC.App.setSelectedAgemos(
-					GC.Util.floatVal(this.innerHTML),
-					"selected"
-				);
-				return false;
-            }
-        })
-        .on("click", ".timeline .years .labels div", function() {
-            if (GC.chartSettings.timeline.interactive) {
-	            GC.App.setSelectedAgemos(
-					GC.Util.floatVal(this.innerHTML) * 12,
-					"selected"
-				);
-	            return false;
-            }
-        })
-        .on("click", ".timeline .days .labels div", function() {
-            if (GC.chartSettings.timeline.interactive) {
-	            GC.App.setSelectedAgemos(
-					GC.Util.floatVal(this.innerHTML) / GC.Constants.TIME_INTERVAL.DAYS_IN_MONTH,
-					"selected"
-				);
-	            return false;
-            }
         })
         .on("mousemove", ".timeline .labels div", function(e) {
             if (GC.chartSettings.timeline.interactive) {
@@ -533,6 +523,9 @@ ChartPane.prototype = {
 			});
         })
         .filter("." + granularityClass + " .labels > div")
+		//.text(
+		//	new GC.TimeInterval(GC.App.getPatient().DOB).addMilliseconds(age).toString({})
+		//)
         .addClass(className);
     },
 	
@@ -771,7 +764,7 @@ ChartPane.prototype = {
 			if ( rowIndex > 0 && s.verticalShift.enabled ) {
 				topOutline    = chart.get("topOutline");
 				bottomOutline = chartAbove.get("bottomOutline");
-				diff          = getLinesMinDistanceY(
+				diff          = GC.Util.getLinesMinDistanceY(
 					bottomOutline, 
 					topOutline, 
 					s.verticalShift.ticks
@@ -846,7 +839,8 @@ ChartPane.prototype = {
 	// Start of the selection-related methods
 	// =========================================================================
 	_init__selection : function() {
-		var inst = this;
+		var inst = this,
+			selecting;
 		
 		// Re-select
 		GC.Preferences.bind("set:metrics set:pctz", function() {
@@ -863,7 +857,13 @@ ChartPane.prototype = {
 		});
 		
 		$("html").bind("appSelectionChange", function(e, selType, sel) {
-			setTimeout(function() { inst.selectAge( sel.age.getWeeks(), selType ); }, 0);
+			//setTimeout(function() { 
+				if (!selecting) {
+					selecting = true;
+					inst.selectAge( sel.age.getWeeks(), selType ); 
+					selecting = false;
+				}
+			//}, 0);
 		});
 	},
 	
@@ -958,7 +958,8 @@ ChartPane.prototype = {
 			chart.unsetSelection(type);
 		});
 		
-		GC.Tooltip.reorder();
+		//GC.Tooltip.reorder();
+		//setTimeout(GC.Tooltip.reorder, 0);
 	},
 	
 	restoreSelection : function() {
@@ -1021,7 +1022,7 @@ ChartPane.prototype = {
 		
 		var points  = this.drawSelectionPoints( weeks, type ),
 			closest = null,
-			agemos  = weeks2months( weeks ), 
+			agemos  = GC.Util.weeks2months( weeks ), 
 			min     = GC.App.getStartWeek(),
 			max     = GC.App.getEndWeek(),
 			line    = type == "hover" ? 
@@ -1047,7 +1048,7 @@ ChartPane.prototype = {
 		// new age and points, based on that
 		if (closest/* && closest !== points[0]*/) {
 			old = weeks;
-			weeks = months2weeks(closest.data.agemos);
+			weeks = GC.Util.months2weeks(closest.data.agemos);
 			if (weeks !== old) {
 				//points = this.drawSelectionPoints( weeks, type );
 				
@@ -1063,9 +1064,19 @@ ChartPane.prototype = {
 				//	weeks / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH,
 				//	type
 				//);
+				
 				//GC.SELECTION[type].age.setWeeks(weeks);
+				//GC.SELECTION[type].record = GC.App.getPatient().getModelEntryAtAgemos(
+				//	GC.SELECTION[type].age.getMonths()
+				//);
+				GC.App.setSelectedAgemos(weeks / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH, type);
 			}
-		}		
+		}
+
+		if (!closest && type == "selected") {
+			inst.highlightAge(-1, "active");
+			return;
+		}
 		
 		cols = this.getColumnCount();
 		
@@ -1099,6 +1110,8 @@ ChartPane.prototype = {
 				);
 			}, 0);
 		}
+		
+		//setTimeout(GC.Tooltip.reorder, 100);
 	},
 	
 	/**
@@ -1321,32 +1334,47 @@ ChartPane.prototype = {
 				var colWidth   = inst.getColumnWidth( colIndex ),
 					colLeft    = inst.getColumnLeft( colIndex ), 
 					itemWidth  = inst[getItemWidth]( colIndex ),
-					html       = ['<div class="labels" ' 
-						+ '" style="left:' + colLeft 
-						+ 'px;width:' + (colWidth - GC.chartSettings.rightgutter) + 'px">'],
+					lastItemWidth,
+					html       = [
+						'<div class="labels" style="left:' + colLeft + 'px;width:' + 
+						(colWidth - GC.chartSettings.rightgutter) + 'px;' + 
+						'clip:rect(0px ' + 
+							(colWidth + 1 - GC.chartSettings.rightgutter) + 
+							'px 16px ' + 
+							(type == "gestweeks" ? 0 : GC.chartSettings.leftgutter - 1) + 
+						'px)">'
+					],
 					points = inst.getIntervalPoints(type, colIndex),
 					len = points.length,
 					getMilliseconds = GC.SELECTION.selected.age.getMilliseconds();
 				
 				
 				$.each(points, function(i, point) {
-					var width = i === len - 1 ? 
-						colWidth - (point.x + GC.chartSettings.leftgutter) : 
-						(points[i+1].value - point.value) * itemWidth,
-						isOverflowing = Math.round(point.x) >= Math.round(colWidth - GC.chartSettings.rightgutter - 2);
-					if (Math.round(width) >= 1 && !isOverflowing) {
+					var width = /*i === len - 1 ? 
+						lastItemWidth || "auto" :*/
+						//colWidth - (point.x + GC.chartSettings.leftgutter) : 
+						(point.p2 - point.p1) * itemWidth;//,
+						//isOverflowing = Math.round(point.x) >= Math.round(colWidth - GC.chartSettings.rightgutter - 2);
+					
+					//lastItemWidth = width;
+					
+					//if (Math.round(width) >= 1 && !isOverflowing) {
 						html.push(
 							'<div style="left:',
-							point.x,
+							Math.ceil(point.x),
 							'px;width:',
 							width,
 							'px;" data-value="' + point.value + '"' + 
 							' startAge="' + point.raw[0] + '"' + 
-							' endAge="' + point.raw[1] + '">',
+							' endAge="' + point.raw[1] + '" title="'+
+							GC.Util.roundToPrecision(point.raw[0]/point.q, 1) + " - " + 
+							GC.Util.roundToPrecision(point.raw[1]/point.q, 1) + " " + 
+							point.label + 
+							'">',
 							point.value,// + increment, 
 							'</div>'
 						);
-					}
+					//}
 				});
 				
 				html.push('</div>');
@@ -1486,69 +1514,96 @@ ChartPane.prototype = {
 				minStep = 40,
 				px      = 0,
 				q       = 1,
-				i       = 0;
+				i       = 0,
+				label   = "",
+				offset = (Math.floor(p1) - p1) * this.pixelsPerWeek(colIndex);
 			
 			switch ( type ) {
 				case "years":
-					p1 = p1 / GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR;
-					p2 = p2 / GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR;
+					offset = (
+						Math.floor(p1 / GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR) - 
+						p1 / GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR
+					) * this.pixelsPerYear(colIndex);
+					p1 = Math.floor(p1 / GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR);
+					p2 = Math.ceil (p2 / GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR);
 					px = this.pixelsPerYear( colIndex );
-					q  = 1000 * 60 * 60 * 24 * 7 * GC.Constants.TIME_INTERVAL.WEEKS_IN_YEAR;
+					q  = GC.Constants.TIME.YEAR;
+					label = "years";
 					break;
 				case "months":
-					p1   = p1 / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH;
-					p2   = p2 / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH;
-					px   = this.pixelsPerMonth( colIndex );// / 2;
-					q  = 1000 * 60 * 60 * 24 * 7 * GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH;
-					//step = 0.5;
+					offset = (
+						Math.floor(p1 / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH) - 
+						p1 / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH
+					) * this.pixelsPerMonth(colIndex);
+					p1 = Math.floor(p1 / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH);
+					p2 = Math.ceil (p2 / GC.Constants.TIME_INTERVAL.WEEKS_IN_MONTH);
+					px = this.pixelsPerMonth( colIndex );
+					q  = GC.Constants.TIME.MONTH;
+					label = "months";
 					break;
 				case "weeks":
-					//p1 = Math.round(p1);
-					//p2 = Math.round(p2);
-					px = this.pixelsPerWeek( colIndex );
-					q  = 1000 * 60 * 60 * 24 * 7;
+					offset = (Math.floor(p1) - p1) * this.pixelsPerWeek(colIndex);
+					p1 = Math.floor(p1);
+					p2 = Math.ceil (p2);
+					px = this.pixelsPerWeek(colIndex);
+					q  = GC.Constants.TIME.WEEK;
+					label = "weeks";
 					break;
 				case "days":
-					p1 = p1 * 7;//Math.round(p1 * 7);
-					p2 = p2 * 7;//Math.round(p2 * 7);
+					offset = (Math.floor(p1 * 7) - p1 * 7) * this.pixelsPerDay(colIndex);
+					p1 = Math.floor(p1 * 7);
+					p2 = Math.ceil (p2 * 7);
 					px = this.pixelsPerDay( colIndex );
-					q  = 1000 * 60 * 60 * 24;
+					q  = GC.Constants.TIME.DAY;
+					label = "days";
 					break;
 				case "gestweeks":
+					offset = (Math.floor(p1) - p1) * this.pixelsPerWeek(colIndex);
 					minStep = 20;
-					p1 += 40 + patient.EDD.diffWeeks(patient.DOB);
-					p2 += 40 + patient.EDD.diffWeeks(patient.DOB);
+					p1 = Math.floor(p1 + 40 + patient.EDD.diffWeeks(patient.DOB));
+					p2 = Math.ceil (p2 + 40 + patient.EDD.diffWeeks(patient.DOB));
 					p2 = Math.min(p2, 51);
 					px = this.pixelsPerWeek( colIndex );
-					q  = 1000 * 60 * 60 * 24 * 7;
+					q  = GC.Constants.TIME.WEEK;
+					label = "gest. weeks";
 					break;
 				default:
 					throw "Invalid argument";
 			}
 			
 			while ( p1 <= p2 && x < cw - minStep ) {
-				x = GC.chartSettings.leftgutter + px * n++;
-				if ( x - lastX >= minStep ) {
-					lastX = x;
-					
-					// Set the end time of the last interval to the start of 
-					// this one minus one ms
-					if (i > 0) {
-					    out[i - 1].raw[1] = p1 * q - 1;
+				x = (GC.chartSettings.leftgutter + offset) + px * n++;
+				
+				//if (x >= GC.chartSettings.leftgutter) {
+					if ( !lastX || x - lastX >= minStep ) {
+						lastX = x;
+						
+						// Set the end time of the last interval to the start of 
+						// this one minus one ms
+						if (i > 0) {
+							out[i - 1].raw[1] = p1 * q - 1;
+							out[i - 1].p2 = p1;
+						}
+						
+						out[i] = {
+							p1    : p1,
+							x     : x,
+							value : Math.round(p1), //Math.round(p1 + (i > 0 ? (p1 - out[i - 1].p1) / 2 : step / 2)),
+							raw   : [p1 * q],
+							q     : q,
+							label : label
+						};
+						
+						i++;
 					}
-					
-					out[i++] = {
-						x     : x,
-						value : Math.round(p1),
-						raw   : [p1 * q]
-					};
-				}
+				//}
 				p1 += step;
 			}
 			
 			// Set the end time of the last interval to the end time selected
 			if (i > 0) {
-                out[i - 1].raw[1] = p2 * q;
+                out[i - 1].raw[1] = p1 * q;
+				out[i - 1].p2 = p1;
 			}
 			
 			this.__CACHE__.IntervalPoints[type][colIndex] = out;
@@ -1670,7 +1725,7 @@ ChartPane.prototype = {
 	
 	months2x : function( m, colIndex ) 
 	{
-		m -= weeks2months(GC.App.getStartWeek());
+		m -= GC.Util.weeks2months(GC.App.getStartWeek());
 		return this.getColumnLeft( colIndex ) + GC.chartSettings.leftgutter + m * this.pixelsPerMonth( colIndex ); 
 	},
 	
@@ -1694,8 +1749,7 @@ ChartPane.prototype = {
 		if (type == "gestweeks") {
 			patient = GC.App.getPatient();
 			return GC.App.getPatient().isPremature() && 
-					time <= GC.Constants.TIME.YEAR * 2 + GC.Constants.TIME.WEEK
-					//&& GC.App.getStartWeek() < 40 + patient.EDD.diffWeeks(patient.DOB);
+					time <= GC.Constants.TIME.YEAR * 2 + GC.Constants.TIME.WEEK;
 		}
 		
 		if ( !GC.chartSettings.timeline.showLabelsInterval[type] ) {

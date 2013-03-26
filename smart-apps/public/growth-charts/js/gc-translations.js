@@ -1,4 +1,4 @@
-GC = (function(NS) {
+window.GC = (function(NS) {
 	
 	var _data = {
 		STR_1  : { en : "Head Circumference", es : "Circunferencia de la cabeza" },
@@ -43,6 +43,10 @@ GC = (function(NS) {
 		STR_35 : { en : "Entry Date"              , es : "Fecha" },
 		STR_36 : { en : "Age"                     , es : "Edad" },
 		
+		STR_37 : { en : "Mid-Parental"     , es : "Mid. Altura de los padres" },
+		STR_38 : { en : "Latest Percentile", es : "Altura nominal estimada"   },
+		STR_39 : { en : "Bone Age Adjusted", es : "Bone estimada Edad Altura" },
+		
 		// =====================================================================
 		// Parental view 
 		// (Must use suffix of 100+ because it is very difficult to merge 
@@ -67,8 +71,37 @@ GC = (function(NS) {
 		STR_147: { en : "Edit patient", es: "Editar paciente"},
 		STR_148: { en : "Add photo", es: "Poner foto"},
 		STR_149: { en : "No Allergies", es: "No Alergias"},
-		STR_150: { en :  " is an invalid value for the height of the mother.", es: " no esta valor valida para la altura de la madre."},
-		STR_151: { en :  " is an invalid value for the height of the father.", es: " no esta valor valida para la altura del padre."},
+		STR_150: { en : " is an invalid value for the height of the mother.", es: " no esta valor valida para la altura de la madre."},
+		STR_151: { en : " is an invalid value for the height of the father.", es: " no esta valor valida para la altura del padre."},
+		STR_152: { en : "Height", es: "Altura"},
+		STR_153: { en : "Child's Height Progression", es : "Nino Progresion Altura" },
+		STR_154: { en : "Edit Parental Heights", es : "Editar alturas de los padres" },
+		STR_155: { en : "sex", es: "sexo" },
+		STR_156: { en : "age", es: "edad" },
+		STR_157: { en : "dob", es: "dob"  },
+		STR_158: { en : "No data", es: "No hay datos"  },
+		
+		STR_159: { en : "has a <b>healthy weight</b> of", es : "tiene un <b>peso saludable</b> de" },
+		STR_160: { en : "is <b>underweight</b> at", es : "está <b>bajo de peso</b> con" },
+		STR_161: { en : "is <b>overweight</b> at", es : "tiene un <b>sobrepeso</b> de" },
+		STR_162: { en : "is <b>obese</b> at", es : "está <b>obeso</b> con" },
+		STR_163: { en : "The healthy weight for his age and height is", es : "El peso saludable para su edad y estatura es" },
+		STR_164: { en : "The healthy weight for her age and height is", es : "El peso saludable para su edad y estatura es" },
+		STR_165: { en : "Compared to his last weight assessment, he is", es : "Comparado con su medición de peso anterior, el está" },
+		STR_166: { en : "Compared to her last weight assessment, she is", es : "Comparado con su medición de peso anterior, ella está" },
+		STR_167: { en : "more underweight."                , es :  "más desnutrid{o/a}." },
+		STR_168: { en : "improving (good!)."               , es :  "mejorando (¡bien!)." },
+		STR_169: { en : "at risk for becoming underweight.", es :  "en riesgo de desnutrición." },
+		STR_170: { en : "at risk for becoming overweight." , es :  "en riesgo de sobrepeso." },
+		STR_171: { en : "at risk for becoming obese."      , es :  "en riesgo de obesidad." },
+		STR_172: { en : "more obese."                      , es :  "más obes{o/a}." },
+		
+		STR_173: { en : "Underweight", es : "Bajo peso" },
+		STR_174: { en : "Healthy"    , es : "Saludable" },
+		STR_175: { en : "Overweight" , es : "Sobrepeso" },
+		STR_176: { en : "Obese"      , es : "Obeso"     },
+		
+		STR_177: { en : "Latest measurements", es : "Las últimas mediciones" }
 	};
 	
 	NS.str = function( key, loc ) {
@@ -89,4 +122,4 @@ GC = (function(NS) {
 	
 	return NS;
 	
-})(window.GC || {});
+}(window.GC || {}));

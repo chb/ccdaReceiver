@@ -10,10 +10,52 @@ body {
 	font-size: 14px;
 	text-align: center;
 }
+.gender-color  { color : #666 }
+.gender-bg     { background-color : #CCC }
+.gender-border { color : #666 }
+.gender-button { color: #666}
+
+#today {
+	color: #666;
+	float:right;
+	line-height: 1em;
+}
+
+#print-toolbar {
+	background: #CCC;
+	border-radius: 0 0 8px 8px;
+	position: fixed;
+	z-index: 100;
+	top: -1px;
+	right: 10%;
+	padding: 4px 8px;
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 1px 1px 7px rgba(0, 0, 0, 0.5), 0 0 0 1px #DDD inset; 
+	text-shadow: 0 1px 0 #DDD;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+#print-toolbar .print-link {
+	line-height: 16px;
+	text-decoration: none;
+	color: #666;
+	padding-right: 4px;
+}
+#print-toolbar .print-link:hover {
+	color : #000;
+	text-shadow: 0 1px 0 #EEE;
+}
+#print-toolbar .print-link img {
+	padding: 0 6px 0 0;
+	vertical-align: top;
+	border: none;
+}
+
 h1 {
 	font-family: Arial, sans-serif;
 	font-size: 1.6em;
 	color: #000;
+	margin: 0;
 }
 .frame {
 	border: 1px solid #666;
@@ -23,11 +65,12 @@ h1 {
 }
 #header {
 	background: transparent;
-	padding: 10px;
+	padding: 0 10px 10px;
 	text-align: left;
 	width: 1000px;
 	margin: auto;
 }
+
 #stage {
 	/*height: 650px;
 	min-height: 650px;*/
@@ -73,8 +116,11 @@ svg {
 }
 
 
+
 @media print {
-	
+	#print-toolbar {
+		display: none;
+	}
 }
 
 /* -------------------------------------------------------------------------- *
@@ -84,6 +130,7 @@ svg {
 	min-width: 100%;
 	border-collapse: collapse;
 	table-layout: fixed;
+	font-size: 12px;
 }
 .print-table tr.odd {
 	background: #F7F7F7;
@@ -96,6 +143,10 @@ svg {
 	text-align: center;
 	overflow: hidden;
 	background: #E1EBF1;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 60px;
+	font-size: 12px;
 }
 
 .print-table td {
@@ -106,6 +157,8 @@ svg {
 	overflow: hidden;
 	color: #7A909E;
 } 
+
+ 
 /* -------------------------------------------------------------------------- *
  *                         SVG and VML Styles                                 *
  * -------------------------------------------------------------------------- */
@@ -313,10 +366,10 @@ svg path {
 	color: #000;
 	background: #FFF;
 }
-.timeline .years .labels div.active:after { content : " Years "; font-size: 10px; font-weight: normal; }
-.timeline .months .labels div.active:after { content: " Months "; font-size: 10px; font-weight: normal; }
-.timeline .weeks .labels div.active:after { content: " Weeks "; font-size: 10px; font-weight: normal; }
-.timeline .days .labels div.active:after { content: " Days "; font-size: 10px; font-weight: normal; }
+.timeline .years .labels div.active:after { content : " y "; font-size: 10px; font-weight: normal; }
+.timeline .months .labels div.active:after { content: " m "; font-size: 10px; font-weight: normal; }
+.timeline .weeks .labels div.active:after { content: " w "; font-size: 10px; font-weight: normal; }
+.timeline .days .labels div.active:after { content: " d "; font-size: 10px; font-weight: normal; }
 
 .timeline > div {
 	display: none;
@@ -487,4 +540,36 @@ svg path {
 .annotations .annotation-button.to-right.active .details:before {
 	left: 0;
 	right: auto;
+}
+
+/* -------------------- Parental View Styles -------------------------------- */
+
+#PatientHeader, 
+#PredictedHeightHeader {
+	background: transparent;
+	overflow: visible;
+	color: #666;
+	font-weight: bold;
+	line-height: 50px;
+	border-bottom: 1px solid #999;
+	padding-bottom: 7px;
+	margin-bottom: 1px;
+}
+
+#PredictedHeightHeader:before,
+#PredictedHeightHeader:after {
+	display: none;
+}
+
+#PaperLeft {
+	font-size: 0.96em;
+}
+
+span.title {
+	margin-right: 16px;
+	color: #000;
+	font-weight: bold;
+}
+.patient-name.heading {
+	display: none;
 }

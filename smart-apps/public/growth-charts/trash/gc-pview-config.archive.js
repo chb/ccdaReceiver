@@ -1,7 +1,7 @@
 //DATAFILE
 //Here's where the fun begins
 	
-GC = window.GC || {};
+window.GC = window.GC || {};
 
 function setData(patient)
 {

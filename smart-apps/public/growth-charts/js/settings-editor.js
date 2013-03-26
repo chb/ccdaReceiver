@@ -38,6 +38,7 @@
 	}
 	
 	function applyChanges(callback) {
+		var path;
 		mask();
 		root.find(".footer input.save, .footer input.apply").addClass("ui-state-disabled");
 		setTimeout(function() {  
@@ -45,7 +46,7 @@
 			$.when(MODEL.save()).then(function() {
 				less.refresh();
 				GC.App.refresh();
-				for (var path in CHANGES) {
+				for (path in CHANGES) {
 					GC.Preferences.autoCommit = false;
 					GC.Preferences.trigger("set:" + path, CHANGES[path]);
 					GC.Preferences.trigger("set", CHANGES[path]);
@@ -120,6 +121,10 @@
 	
 	
 	$("#header").mask({ z : 1000, bgcolor : "#000", opacity: 0.5 });
+	
+	// App version =============================================================
+	root.find(".app-ver").html(GC.chartSettings.version.asString());
+	
 	// Colors ==================================================================
 	(function() {
 		
@@ -268,8 +273,8 @@
 	
 	// fontSize ----------------------------------------------------------------
 	root.find('[name="fontSize"]').stepInput({
-		min : 10,
-		max : 18,
+		min : 11,
+		max : 16,
 		step: 1,
 		precision : 1,
 		format : function( value ) {
@@ -290,6 +295,32 @@
 		}).val(MODEL.prop(this.name)).triggerHandler("change");
 	});
 	
+	// percentile --------------------------------------------------------------
+	MODEL.bind("set:percentiles", function(e) {
+		var _pct  = $.makeArray(e.data.newValue).join(","),
+			input = root.find('input:radio[name=percentile][value="' + _pct + '"]');
+		if (input.length) {
+			input.prop("checked", true);
+		}
+	});
+	root.find('input:radio[name=percentile]').change(function() {
+		MODEL.prop("percentiles", this.value.split(","));
+	}).each(function() {
+		this.checked = MODEL.prop("percentiles").join(",") == this.value;
+	});
+	
+	// paperWidthType ----------------------------------------------------------
+	root.find('[name="paper-width-type"]').change(function() {
+		root.find(".paper-max-width-row").toggleClass("ui-state-disabled", this.value == "fixed"  && this.checked);
+		root.find(".paper-width-row"    ).toggleClass("ui-state-disabled", this.value == "auto" && this.checked);
+		if (this.checked) {
+			MODEL.prop("widthType", this.value);
+		}
+	}).each(function() {
+		this.checked = MODEL.prop("widthType") === this.value;
+		$(this).triggerHandler("change");
+	});
+	
 	// maxWidth ----------------------------------------------------------------
 	root.find('[name="maxWidth"]').stepInput({
 		min : 800,
@@ -303,6 +334,21 @@
 			MODEL.prop("maxWidth", d.value);
 		}
 	}).stepInput("value", MODEL.prop("maxWidth"));
+	
+	// paperWidth --------------------------------------------------------------
+	root.find('[name="paperWidth"]').stepInput({
+		min : 800,
+		max : 1800,
+		step: 10,
+		precision : 1,
+		format : function( value ) {
+			return GC.Util.intVal(value) + "px";
+		},
+		change : function(e, d) {
+			MODEL.prop("paperWidth", d.value);
+		}
+	}).stepInput("value", MODEL.prop("paperWidth"));
+	
 	
 	// dateFormat --------------------------------------------------------------
 	root.find('[name="dateFormat"]').change(function() {
@@ -559,6 +605,15 @@
 		.val(MODEL.prop(this.name))
 		.change(function() {
 			MODEL.prop(this.name, GC.Util.intVal($(this).val()));
+		});
+	});
+	
+	// velocity-denominator ----------------------------------------------------
+	root.find(".round-precisions select.velocity-denominator").each(function() {
+		$(this)
+		.val(MODEL.prop(this.name))
+		.change(function() {
+			MODEL.prop(this.name, $(this).val());
 		});
 	});
 	

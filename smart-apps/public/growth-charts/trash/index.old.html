@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Growth Charts Application</title>
+        
+        <!-- BPC stylesheets-->
+        <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+        <link rel="stylesheet" href="css/gc-screen.css" type="text/css" media="screen" />
+        <link rel="stylesheet" href="themes/custom-theme/jquery-ui-1.8.18.custom.css" type="text/css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="css/gc-pview.css" />
+        
+        <!-- Standard JS Libraries -->
+        <script src="lib/smart-api-client-0.5.js" type="text/javascript"></script>
+        <script src="lib/jquery.js" type="text/javascript"></script>
+        <script src="lib/jquery-ui-1.8.14.custom.min.js" type="text/javascript"></script>
+        <script src="lib/raphael.js" type="text/javascript"></script>
+        <script src="lib/xdate.js" type="text/javascript"></script>
+        
+        <!-- GC Modules -->
+        <script src="js/gc-charts-data.js" type="text/javascript"></script>
+        <script src="js/gc-statistics.js" type="text/javascript"></script>
+        <script src="js/gc-smart-data.js" type="text/javascript"></script>
+        <script src="js/gc-chart.js" type="text/javascript"></script>
+        <script src="js/gc-chart-config.js" type="text/javascript"></script>
+        <script src="js/gc-graph.js" type="text/javascript"></script>
+        <script src="js/gc-pview-config.js" type="text/javascript"></script>
+		<script src="js/gc-percenitile-chart.js" type="text/javascript"></script>
+        <script src="js/gc-pview.js" type="text/javascript"></script>
+        <script src="js/util.js" type="text/javascript"></script>
+    </head>
+    
+    <body>
+    
+        <div id="mock">
+            <table>
+                <tr>
+                    <td><img src="img/mock/top-bar1.png" alt="Top Bar 1" width="646" height="43"/></td>
+                    <td><img id="toggle" src="img/mock/toggle-view1.png" alt="Toggle" width="54" height="43"/></td>
+                    <td><img src="img/mock/top-bar2.png" alt="Top Bar 2" width="288" height="43"/></td>
+                </tr>
+                <tr>
+                    <td colspan="3" width="988" height="196"><div id="panel">
+                        <div id="patient-name" class="title"></div>
+                        <div id="patient-age" class="title"></div>
+                        <div id="patient-birth" class="title"></div>
+                        <div id="patient-gender" class="title"></div>
+                    </div></td>
+                </tr>
+            </table>
+        </div>
+		
+        
+		
+        <div id="view-charts">
+            <div id="chart-length"></div>
+            <div id="chart-weight"></div>
+            <div id="chart-headc"></div>
+            <div id="mini-chart"></div>
+        </div>
+		
+        <div id="view-parental">
+            
+			<div id="left-pview">
+				<div id="pview1"></div>
+				<div id="pview2"></div>
+            </div>
+			
+            <div id="pview3"></div>
+			
+			<div id="pview2"></div>
+        </div>  
+
+		<script>
+			(function () {
+			"use strict";
+			
+				
+			
+			}());
+		</script>
+        <script>
+        (function () {
+        "use strict";
+            
+            var view = 0;
+            
+            function selectView (view) {
+                switch (view) {
+                    case 0:
+                        $('#view-charts').show();
+						$(window).load(function(){
+                        $('#view-parental').hide();
+						});
+					
+                        break;
+                    case 1:
+                    default:
+                        $('#view-parental').show();
+                        $('#view-charts').hide();
+                }
+            }
+            
+            $('#toggle').click(function(){
+                view = (view + 1) % 2;
+                $('#toggle').attr('src', "img/mock/toggle-view" + (view + 1) + ".png");
+                selectView (view);
+            });
+            
+            selectView (view);
+        }());
+        </script>
+        
+        <script>
+        (function () {
+        "use strict";
+        
+            var points;
+        
+            function drawCharts (patient) {
+            
+                $('#patient-name').text(patient.name);
+                $('#patient-age').text(Math.floor(12*years_apart(patient.birthdate, Date())) + " months");
+                $('#patient-birth').text(patient.birthdate);
+                $('#patient-gender').text(patient.gender);
+            
+                function filterPoints (data, min, max) {
+                    var points = [], i;
+                    
+                    for (i = 0; i < data.length; i++) {
+                        if (data[i].agemos >= min && data[i].agemos <= max) {
+                            points.push (data[i]);
+                        }
+                    }
+                    
+                    return points;
+                }
+            
+                function drawChart (divID, dataSetID, gender, points) {
+                    var set = GC.DATA_SETS[dataSetID];
+                    
+                    GC.chartSettings.vAxisLabel = set.units;
+                    GC.chartSettings.graphLabel = set.description + " (" + set.source + ")";
+                    
+                    var curvesData = [];
+                    curvesData = [
+                        {label: 3, data: GC.generateCurveSeries (set, gender, 0.03)},
+                        {label: 15, data: GC.generateCurveSeries (set, gender, 0.15)},
+                        {label: 50, data: GC.generateCurveSeries (set, gender, 0.50)},
+                        {label: 85, data: GC.generateCurveSeries (set, gender, 0.85)},
+                        {label: 97, data: GC.generateCurveSeries (set, gender, 0.97)}];
+                        
+                    GC.drawGraph (divID, curvesData, points);
+                }
+
+                GC.chartSettings.colorS = "rgb(77,148,189)";
+                points = filterPoints(patient.data.length, 24, 240);
+                drawChart ("chart-length", "CDC_STATURE", patient.gender, points);
+                
+                GC.chartSettings.colorS = "rgb(217,174,70)";
+                points = filterPoints(patient.data.weight, 24, 240);
+                drawChart ("chart-weight", "CDC_WEIGHT", patient.gender, points);
+                
+                GC.chartSettings.colorS = "rgb(138,183,98)";
+                GC.chartSettings.height = 550;
+                GC.chartSettings.vLabels = 30;
+                GC.chartSettings.gridRows = 30;
+                points = filterPoints(patient.data.headc, 0, 36);
+                drawChart ("chart-headc", "CDC_HEAD_CIRCUMFERENCE_INF", patient.gender, points);
+                
+                //drawPaper(window.innerWidth-70,700,0,0);
+                
+                /*
+                alert (window.innerWidth);
+                window.onresize = resize;
+                function resize() {
+                   document.location.reload(true)
+                }
+                */
+				
+            }
+            
+            $(document).ready(function() { 
+                var patient;
+                if ( typeof SMART === "undefined" ) {
+                    alert("Error: SMART Connect interface not found");
+                } else {
+                    SMART.ready(function () {
+                        $.when(GC.get_demographics(), GC.get_vitals(0))
+                         .then( function (demographics, vitals) {
+                                    patient = GC.initPatient(demographics, vitals);
+									GC.currentPatient = patient;
+                                    drawCharts(patient);
+									drawPaper(850,700,0,0, patient);
+									var Paper = Raphael("mini-chart",700,400);
+									drawChartBackGround(20,20, Paper,Paper, "MainView");
+                                },
+                                function (message) {
+                                    alert (message.data);
+                                });
+                    }).fail(function () {
+                        alert ("The GC application was launched outside a SMART container. We will load some demo data for you.");
+                        patient = GC.samplePatient;
+						GC.currentPatient = patient;
+                        drawCharts(patient);
+						drawPaper(850,700,0,0, patient);
+						var Paper = Raphael("mini-chart",700,400);
+						drawChartBackGround(20,20, Paper,Paper, "MainView");
+                    });
+                }
+            });
+        }());
+        </script>
+    </body>
+    
+</html>

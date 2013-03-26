@@ -1,4 +1,4 @@
-/*global Chart, GC, PointSet, strPad, weeks2months, Raphael*/
+/*global Chart, GC, PointSet, Raphael*/
 /*jslint eqeq: true, nomen: true, plusplus: true */
 (function(NS, $) {
 	
@@ -20,7 +20,7 @@
 		patientDataType : "bmi",
 
 		getTitle : function() {
-			return GC.str("STR_5") + " (" + this.getUnits() + ")";
+			return GC.str("STR_5") + " (" + this.getUnits().replace(/\n/g, " ") + ")";
 		},
 
 		setDataSource : function( src ) 
@@ -39,7 +39,15 @@
 		},
 		
 		getUnits : function() {
-			return GC.App.getMetrics() == "eng" ? "lb/ft2" : "kg/m2";
+			return GC.App.getMetrics() == "eng" ? "lb/ft2\nx703" : "kg/m2";
+		},
+		
+		getLocalizedValue : function(val) {
+			return GC.Util.format(val, {
+				type : this.patientDataType,
+				unitMetric : "",
+				initImp    : ""
+			});
 		}
 		
 	});

@@ -1,5 +1,5 @@
 // Initialize the BPC global obeject as needed
-GC = window.GC || {};
+window.GC = window.GC || {};
 
 (function () {
     "use strict";
@@ -51,11 +51,11 @@ GC = window.GC || {};
 
             for (var j = 0; j < curvesData.length; j++) {
                 for (i = 0; i < curvesData[j].data.length; i++) {
-                    var x = scale (curvesData[j].data[i].x, minX, maxX, startX, endX);
+                    var x = GC.Util.scale (curvesData[j].data[i].x, minX, maxX, startX, endX);
                     
                     var pathAdvance = function (first, x, y) { 
                         var path = [];
-                        var y = scale (curvesData[j].data[i].y, minY, maxY, endY, startY);
+                        var y = GC.Util.scale (curvesData[j].data[i].y, minY, maxY, endY, startY);
                         s.height - s.bottomgutter - s.Y * y;
                         if (first) path = ["M", x, y];
                         path = path.concat(["L", x, y]);
@@ -72,8 +72,8 @@ GC = window.GC || {};
             }
             
             for (var i = 0; i < points.length; i++) {
-                var x = scale (points[i].agemos, minX, maxX, startX, endX);
-                var y = scale (points[i].value, minY, maxY, endY, startY);
+                var x = GC.Util.scale (points[i].agemos, minX, maxX, startX, endX);
+                var y = GC.Util.scale (points[i].value, minY, maxY, endY, startY);
                 r.circle(x, y, 3).attr({color: "rgb(0,0,0)", fill: "rgb(0,0,0)", stroke: "rgb(0,0,0)", "stroke-width": 1});
             }
 

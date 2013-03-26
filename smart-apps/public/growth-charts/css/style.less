@@ -1,8 +1,9 @@
-@color-length : pref("lengthChart.color"  );
-@color-weight : pref("weightChart.color"  );
-@color-headc  : pref("headChart.color"    );
-@color-bmi    : pref("bodyMassChart.color");
-@color-selection : pref("selectionLine.stroke");
+
+@color-length    : presetColor("Length");
+@color-weight    : presetColor("Weight");
+@color-headc     : presetColor("Head C");
+@color-bmi       : presetColor("BMI"   );
+@color-selection : presetColor("Primary selection");
 
 @color-contrast-length : readableColor(@color-length, 0.95, 1);
 @color-contrast-weight : readableColor(@color-weight, 0.90, 1);
