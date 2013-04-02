@@ -40,14 +40,43 @@
   <div class="row-fluid">
     <ul class="thumbnails">
       <li class="span3" ng-repeat="app in all_apps">
-        <div class="thumbnail">
-          <img ng-src="{{app.icon}}"><!--"/ui/authorize/bp-centiles?patient=123"--> 
-          <div class="caption">
-            <a ng-href="/auth/provider/launch-app?response_type=token&client_id={{app._id}}&scope=patient&patient={{patientHelper.id(patient)}}" target="_blank" class="btn btn-block btn-primary">{{app.name}}</a>
-          </div>
+      <div class="thumbnail">
+        <img ng-src="{{app.icon}}"><!--"/ui/authorize/bp-centiles?patient=123"--> 
+        <div class="caption">
+          <a ng-href="/auth/provider/launch-app?response_type=token&client_id={{app._id}}&scope=patient&patient={{patientHelper.id(patient)}}" target="_blank" class="btn btn-block btn-primary">{{app.name}}</a>
         </div>
+      </div>
       </li>
     </ul>
   </div>
 </div>
 
+<div class="well helpSmart">
+  <h2> Help improve the C-CDA Receiver!</h2>
+  <h4>Four ways to help improve the SMART C-CDA Scorecard:</h4>
+  <ol>
+    <li>Try out the Receiver and <a href="https://twitter.com/intent/tweet?hashtags=HealthIT&via=SMARTHealthIT">tweet about it</a><code>@SMARTHealthIT</code></li>
+    <li>Feed in your sample C-CDAs to fuel apps and <a href="https://github.com/chb/ccdaReceiver/issues">let us know what you find</a></li>
+    <li>Develop an app at <code>http://localhost:8000/smartapp/index.html</code> and <a href="https://github.com/chb/ccdaReceiver/issues">share your experience</a></li>
+    <li><a href="https://github.com/chb/ccdaReceiver">Contribute code</a> via GitHub</li>
+  </ol>
+  <br>
+  <h2>About the Receiver</h2>
+
+  <p>
+  The SMART C-CDA Receiver provides a lightweight Web API to clinical summary data.
+  It exposes discrete JSON resources for:
+  <ul>
+    <li>C-CDA Documents</li>
+    <li>C-CDA Sections</li>
+    <li>C-CDA Organizers</li>
+    <li>C-CDA Entries</li>
+  </ul>
+  </p>
+  <p>
+  To learn more, visit the <a href="https://github.com/chb/ccdaReceiver/wiki">Documentwation wiki</a> on GitHub. 
+  </p>
+
+  <h4>Powered by SMART Platforms</h4>
+  Visit <a href="http://smartplatforms.org">smartplatforms.org</a> to learn more about the ONC-funded, SHARP III project.
+</div>
